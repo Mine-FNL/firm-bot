@@ -1,0 +1,97 @@
+{
+  "cases": [
+    {
+      "question": "What is the governing law?",
+      "expected_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "expected_keywords": [
+        "This Agreement is to be construed according to the laws          of the State of Illinois"
+      ]
+    },
+    {
+      "question": "Is there an exclusivity provision?",
+      "expected_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "expected_keywords": [
+        "The  Distributor  shall  not order or                   purchase Products from any source other than the Company"
+      ]
+    },
+    {
+      "question": "Is solicitation of customers restricted?",
+      "expected_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "expected_keywords": [
+        "Distributor further agrees that it will not interfere                            with or  otherwise  disrupt  the  busin"
+      ]
+    },
+    {
+      "question": "Can the contract be assigned to a third party?",
+      "expected_source": "WHITESMOKE,INC_11_08_2011-EX-10.26-PROMOTION AND DISTRIBUTION AGREEMENT.pdf",
+      "expected_keywords": [
+        "[ * ] may [ * ]any of its rights or obligations under this Agreement without the prior written consent of [ * ]"
+      ]
+    },
+    {
+      "question": "What license is granted?",
+      "expected_source": "WHITESMOKE,INC_11_08_2011-EX-10.26-PROMOTION AND DISTRIBUTION AGREEMENT.pdf",
+      "expected_keywords": [
+        "Subject to the terms and conditions of this Agreement, Google grants to Distributor a limited, [ * ] license  during the"
+      ]
+    },
+    {
+      "question": "Does either party have audit rights?",
+      "expected_source": "WHITESMOKE,INC_11_08_2011-EX-10.26-PROMOTION AND DISTRIBUTION AGREEMENT.pdf",
+      "expected_keywords": [
+        "During the Term, and for a period of [ * ] thereafter, Google may audit Distributor's relevant records to confirm  Distr"
+      ]
+    },
+    {
+      "question": "How long is the warranty?",
+      "expected_source": "LohaCompanyltd_20191209_F-1_EX-10.16_11917878_EX-10.16_Supply Agreement.pdf",
+      "expected_keywords": [
+        "Within 7 days after the arrival of the goods at destination, should the quality, specification, or quantity be found not"
+      ]
+    },
+    {
+      "question": "What insurance is required?",
+      "expected_source": "LohaCompanyltd_20191209_F-1_EX-10.16_11917878_EX-10.16_Supply Agreement.pdf",
+      "expected_keywords": [
+        "To be covered by the Seller for 110% invoice value against All Risks and War Risk"
+      ]
+    },
+    {
+      "question": "Is there a non-compete clause?",
+      "expected_source": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT.pdf",
+      "expected_keywords": [
+        "When endorsing a non-competitive product, under no circumstances shall CONSULTANT wear, play, use, hold or in any way be"
+      ]
+    },
+    {
+      "question": "Is there a non-compete clause?",
+      "expected_source": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT.pdf",
+      "expected_keywords": [
+        "Notwithstanding paragraphs 4A, 4B and 4C above, CONSULTANT shall be entitled to endorse and play the [*****]"
+      ]
+    },
+    {
+      "question": "Is there a revenue or profit share?",
+      "expected_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "expected_keywords": [
+        "Commencing with the Calendar Quarter commencing on October 1, 2018, as consideration for the Valeant Activities performe"
+      ]
+    },
+    {
+      "question": "Are there liquidated damages?",
+      "expected_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "expected_keywords": [
+        "Solely in the event that Dova has terminated this Agreement pursuant to Section 12.3.1 and notwithstanding anything else"
+      ]
+    },
+    {
+      "question": "Is there a covenant not to sue?",
+      "expected_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "expected_keywords": [
+        "Valeant shall not at any time during the Term knowingly do or allow to be done any act or thing which will in any way im"
+      ]
+    }
+  ],
+  "source": "CUAD (Contract Understanding Atticus Dataset)",
+  "n_contracts": 10
+}

@@ -1,0 +1,170 @@
+[project]
+name = "firm-bot"
+version = "0.1.0"
+description = "Multi-tenant local-first chatbot builder for professional services firms (legal, audit, consultancy) — citation-required answers over your own PDFs, emails, and contracts."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "firm-bot contributors"}]
+keywords = ["rag", "chatbot", "legal-tech", "llm", "local-first", "citations", "contracts"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Legal Industry",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Office/Business",
+    "Topic :: Text Processing :: Markup",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pypdf>=5.0",
+    "pytesseract>=0.3.13",
+    "pdf2image>=1.17",
+    "python-docx>=1.1",
+    "chromadb>=0.5",
+    "rank-bm25>=0.2",
+    "sentence-transformers>=3.0",
+    "numpy>=2.0",
+    "httpx>=0.28",
+    "pyyaml>=6.0",
+    "python-multipart>=0.0.20",
+    "watchdog>=5.0",
+    "jinja2>=3.1",
+    "pydantic>=2.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "respx>=0.21",     # mock httpx for tests
+    "types-PyYAML",
+]
+embed-fastembed = [
+    "fastembed>=0.3",
+]
+observability = [
+    "prometheus-client>=0.20",
+]
+
+[project.scripts]
+firm-bot = "firm_bot.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/firm-bot/firm-bot"
+Documentation = "https://github.com/firm-bot/firm-bot/blob/main/README.md"
+Issues = "https://github.com/firm-bot/firm-bot/issues"
+Changelog = "https://github.com/firm-bot/firm-bot/blob/main/CHANGELOG.md"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["firm_bot*", "eval*"]
+
+[tool.setuptools.package-data]
+firm_bot = ["ui/*.html", "py.typed"]
+
+# ---- ruff ----
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["data/", "build/", "dist/", ".venv/"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "C4",  # flake8-comprehensions
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "PL",  # pylint
+    "RUF", # ruff-specific
+]
+ignore = [
+    "E501",   # line length (handled by formatter)
+    "PLR0913", # too many arguments — common in CLI plumbing
+    "PLR2004", # magic numbers — many are tuned for this domain
+    "RET504", # unnecessary assignment before return
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLR2004", "S101", "B011", "PLC0415"]
+# Lazy imports are intentional in cli / api / retrieve: heavy deps
+# (chromadb, sentence-transformers) should not load on a typo'd
+# subcommand, and circular imports force the dispatch table to defer.
+# main() in cli.py is a subcommand dispatcher with many returns by design.
+"firm_bot/cli.py" = ["PLC0415", "PLR0911"]
+"firm_bot/api/app.py" = ["PLC0415"]
+"firm_bot/api/embed_cache.py" = ["PLC0415"]
+"firm_bot/ingest/common.py" = ["PLC0415"]
+"firm_bot/ingest/pdf.py" = ["PLC0415"]
+"firm_bot/ingest/eml.py" = ["PLC0415"]
+"firm_bot/retrieve/hybrid.py" = ["PLC0415"]
+"firm_bot/retrieve/rerank.py" = ["PLC0415"]
+"firm_bot/store.py" = ["PLC0415"]
+"firm_bot/embed_backends.py" = ["PLC0415"]
+"eval/harness.py" = ["PLC0415"]
+"eval/compare.py" = ["PLC0415", "PLR0915"]
+"eval/eval_e2e.py" = ["PLC0415", "PLR0915"]
+"eval/build_cuad_corpus.py" = ["PLC0415"]
+
+# ---- mypy ----
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+warn_return_any = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+files = ["firm_bot", "eval"]
+exclude = ["data/", "build/", "tests/"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+# ---- pytest ----
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra --strict-markers --strict-config"
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning:huggingface_hub.*",
+    "ignore::DeprecationWarning:chromadb.*",
+]
+
+# ---- coverage ----
+[tool.coverage.run]
+branch = true
+source = ["firm_bot"]
+omit = ["firm_bot/__main__.py", "firm_bot/ui/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+show_missing = true
+skip_covered = false
+fail_under = 60

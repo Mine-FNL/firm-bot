@@ -1,0 +1,193 @@
+{
+  "cases": 10,
+  "p50_answer_s": 1.37,
+  "p95_answer_s": 2.19,
+  "p50_guard_s": 3.624,
+  "p95_guard_s": 4.038,
+  "headline_pass_rate": 0.0,
+  "avg_keyword_coverage": 0.75,
+  "avg_guard_issues": 1,
+  "citation_coverage": 1.0,
+  "model": "qwen2.5-coder:7b",
+  "judge_model": "qwen2.5-coder:7b",
+  "rows": [
+    {
+      "question": "What's the cap on liability?",
+      "expected_source": "globex_msa",
+      "expected_keywords": [
+        "twelve (12) months",
+        "fees paid"
+      ],
+      "answer": "Neither party's aggregate liability shall exceed two times (2x) the fees paid in the twelve (12) months preceding the claim.[initech_msa.pdf:p.1]",
+      "cited": [
+        "initech_msa.pdf:p.1"
+      ],
+      "issues": 1,
+      "keyword_coverage": 1.0,
+      "has_citation": true,
+      "source_correct": false,
+      "answer_seconds": 1.0577742079622112,
+      "guard_seconds": 3.907221583009232
+    },
+    {
+      "question": "How long does the NDA last?",
+      "expected_source": "initech_nda",
+      "expected_keywords": [
+        "three (3) years",
+        "five (5) years"
+      ],
+      "answer": "The confidentiality obligations under the NDA shall survive termination for an additional five (5) years.[2]",
+      "cited": [
+        "2"
+      ],
+      "issues": 1,
+      "keyword_coverage": 0.5,
+      "has_citation": true,
+      "source_correct": false,
+      "answer_seconds": 1.6279572079656646,
+      "guard_seconds": 3.219288708001841
+    },
+    {
+      "question": "What's the settlement amount?",
+      "expected_source": "umbrella_settlement",
+      "expected_keywords": [
+        "$2,400,000",
+        "thirty (30) days"
+      ],
+      "answer": "The settlement amount is two million four hundred thousand dollars ($2,400,000) as per the Umbrella Corp Settlement Agreement [umbrella_settlement.pdf:p.1].",
+      "cited": [
+        "umbrella_settlement.pdf:p.1"
+      ],
+      "issues": 1,
+      "keyword_coverage": 0.5,
+      "has_citation": true,
+      "source_correct": true,
+      "answer_seconds": 1.0842489579808898,
+      "guard_seconds": 3.7285182080231607
+    },
+    {
+      "question": "What is the CEO's severance?",
+      "expected_source": "wayne_employment",
+      "expected_keywords": [
+        "twenty-four (24) months",
+        "Base Salary"
+      ],
+      "answer": "Wayne Enterprises Executive Employment Agreement specifies that if terminated without Cause, the CEO receives 24 months of base salary as severance plus continuation of health benefits. [wayne_employment.pdf:p.1]",
+      "cited": [
+        "wayne_employment.pdf:p.1"
+      ],
+      "issues": 1,
+      "keyword_coverage": 0.5,
+      "has_citation": true,
+      "source_correct": true,
+      "answer_seconds": 2.290142207988538,
+      "guard_seconds": 4.038066999986768
+    },
+    {
+      "question": "What is the audit fee cap?",
+      "expected_source": "stark_audit",
+      "expected_keywords": [
+        "$450,000",
+        "out-of-pocket expenses"
+      ],
+      "answer": "The audit fee shall not exceed four hundred fifty thousand dollars ($450,000) plus reasonable out-of-pocket expenses, billed monthly as work progresses.[1]",
+      "cited": [
+        "1"
+      ],
+      "issues": 1,
+      "keyword_coverage": 1.0,
+      "has_citation": true,
+      "source_correct": false,
+      "answer_seconds": 1.112558250024449,
+      "guard_seconds": 3.3826175830326974
+    },
+    {
+      "question": "What are the Partner hourly rates?",
+      "expected_source": "globex_msa",
+      "expected_keywords": [
+        "$550",
+        "$750"
+      ],
+      "answer": "The Partner hourly rate at Hooli is $725/hour [hooli_msa.pdf:p.1].",
+      "cited": [
+        "hooli_msa.pdf:p.1"
+      ],
+      "issues": 1,
+      "keyword_coverage": 0.0,
+      "has_citation": true,
+      "source_correct": false,
+      "answer_seconds": 1.5999120000051335,
+      "guard_seconds": 2.866981583996676
+    },
+    {
+      "question": "What's the severance period for the CEO?",
+      "expected_source": "wayne_employment",
+      "expected_keywords": [
+        "twenty-four (24) months"
+      ],
+      "answer": "[wayne_employment.pdf:p.1] The severance period for the CEO is twenty-four (24) months of Base Salary plus continuation of health benefits for the severance period.",
+      "cited": [
+        "wayne_employment.pdf:p.1"
+      ],
+      "issues": 1,
+      "keyword_coverage": 1.0,
+      "has_citation": true,
+      "source_correct": true,
+      "answer_seconds": 2.1920575829572044,
+      "guard_seconds": 3.6447410830296576
+    },
+    {
+      "question": "What's the NDA governing law?",
+      "expected_source": "initech_nda",
+      "expected_keywords": [
+        "Delaware"
+      ],
+      "answer": "The Agreement is governed by the laws of the State of Delaware [initech_nda.pdf:p.1].",
+      "cited": [
+        "initech_nda.pdf:p.1"
+      ],
+      "issues": 1,
+      "keyword_coverage": 1.0,
+      "has_citation": true,
+      "source_correct": true,
+      "answer_seconds": 0.8726255829678848,
+      "guard_seconds": 3.104059499979485
+    },
+    {
+      "question": "What is the bonus target?",
+      "expected_source": "wayne_employment",
+      "expected_keywords": [
+        "two hundred percent",
+        "200%"
+      ],
+      "answer": "The bonus target is two hundred percent (200%) of Base Salary [wayne_employment.pdf:p.1].",
+      "cited": [
+        "wayne_employment.pdf:p.1"
+      ],
+      "issues": 1,
+      "keyword_coverage": 1.0,
+      "has_citation": true,
+      "source_correct": true,
+      "answer_seconds": 1.8776582920108922,
+      "guard_seconds": 3.603169500012882
+    },
+    {
+      "question": "What's the mutual release clause?",
+      "expected_source": "umbrella_settlement",
+      "expected_keywords": [
+        "Settlement Amount",
+        "Effective Date"
+      ],
+      "answer": "Upon receipt of the Settlement Amount, each party releases the other from any claims arising before the Effective Date relating to the 2024 commercial transaction.[umbrella_settlement.pdf:p.1]",
+      "cited": [
+        "umbrella_settlement.pdf:p.1"
+      ],
+      "issues": 1,
+      "keyword_coverage": 1.0,
+      "has_citation": true,
+      "source_correct": true,
+      "answer_seconds": 1.1495492920512334,
+      "guard_seconds": 4.313154874951579
+    }
+  ]
+}

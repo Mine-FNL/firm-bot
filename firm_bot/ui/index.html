@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>firm-bot</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #faf9f5;
+    --fg: #1a1a1a;
+    --muted: #5b5b5b;
+    --border: #d8d6cf;
+    --accent: #1f4e79;
+    --accent-2: #2e7d9e;
+    --warn: #c93a3a;
+    --warn-bg: #fdecec;
+    --ok: #2e7d32;
+    --hit-bg: #fff;
+    --shadow: 0 1px 2px rgba(0,0,0,.06);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,.10);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: 56px 1fr;
+    grid-template-areas:
+      "header header"
+      "sidebar main";
+  }
+  header {
+    grid-area: header;
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    z-index: 10;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  header h1::before {
+    content: "◆";
+    color: var(--accent-2);
+    font-size: 14px;
+  }
+  header .meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; align-items: center; }
+  header .meta .pill {
+    background: #eef4fa;
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  aside {
+    grid-area: sidebar;
+    border-right: 1px solid var(--border);
+    background: #fff;
+    overflow-y: auto;
+    padding: 12px 0;
+  }
+  aside h2 {
+    margin: 12px 16px 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: .04em;
+    font-weight: 600;
+  }
+  aside .firm-list { list-style: none; padding: 0; margin: 0 0 8px; }
+  aside .firm-list li {
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 3px solid transparent;
+    font-size: 13px;
+  }
+  aside .firm-list li:hover { background: #f3f2ee; }
+  aside .firm-list li.active {
+    background: #eef4fa;
+    border-left-color: var(--accent);
+    color: var(--accent);
+  }
+  aside .firm-list li .stats {
+    font-size: 10px;
+    color: var(--muted);
+    background: #f0efe9;
+    padding: 1px 6px;
+    border-radius: 8px;
+  }
+  aside .firm-actions {
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  aside button {
+    width: 100%;
+    padding: 6px 10px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--fg);
+  }
+  aside button:hover { background: #f3f2ee; }
+  aside button.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  aside button.primary:hover { background: #1a4267; }
+
+  main {
+    grid-area: main;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    overflow: hidden;
+  }
+
+  #messages {
+    overflow-y: auto;
+    padding: 20px 32px;
+    background: var(--bg);
+  }
+  .msg { margin-bottom: 24px; max-width: 880px; }
+  .msg .role {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: .04em;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .msg.user .body {
+    background: #eef4fa;
+    padding: 12px 16px;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    border: 1px solid #d6e4f0;
+  }
+  .msg.assistant .body {
+    background: var(--hit-bg);
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    white-space: pre-wrap;
+    line-height: 1.6;
+  }
+  .msg .cite-chip {
+    display: inline-block;
+    background: #eef4fa;
+    color: var(--accent);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    margin: 0 1px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .msg .cite-chip:hover {
+    border-color: var(--accent);
+    background: #d6e4f0;
+  }
+  .msg .hits {
+    margin-top: 10px;
+    border-top: 1px dashed var(--border);
+    padding-top: 8px;
+    font-size: 12px;
+  }
+  .msg .hits summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 11px;
+    padding: 4px 0;
+    user-select: none;
+  }
+  .msg .hits summary:hover { color: var(--accent); }
+  .msg .hits pre {
+    margin: 4px 0 8px;
+    padding: 10px;
+    background: #f6f4ee;
+    border-radius: 4px;
+    font-size: 12px;
+    overflow-x: auto;
+    line-height: 1.5;
+    border-left: 3px solid var(--accent);
+  }
+  .msg .issues {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--warn-bg);
+    border-left: 3px solid var(--warn);
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .msg .issues .issue { margin-bottom: 4px; line-height: 1.5; }
+  .msg .issues .v { font-weight: 600; color: var(--warn); }
+
+  form#chat-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 14px 32px;
+    border-top: 1px solid var(--border);
+    background: #fff;
+  }
+  form#chat-form textarea {
+    width: 100%;
+    min-height: 48px;
+    max-height: 200px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+    resize: vertical;
+  }
+  form#chat-form textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(31,78,121,.15);
+  }
+  form#chat-form button {
+    padding: 10px 18px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+  }
+  form#chat-form button:disabled { opacity: .5; cursor: not-allowed; }
+  form#chat-form button:hover:not(:disabled) { background: #1a4267; }
+
+  .empty {
+    color: var(--muted);
+    padding: 80px 32px;
+    text-align: center;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+  .empty h2 { color: var(--fg); font-weight: 500; margin-bottom: 8px; }
+  .empty p { margin: 4px 0; font-size: 13px; }
+  .error {
+    color: var(--warn);
+    background: var(--warn-bg);
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 12px 32px;
+    border-left: 3px solid var(--warn);
+  }
+
+  /* ---- modal ---- */
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-bg.active { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    padding: 24px;
+    width: 480px;
+    max-width: 90vw;
+  }
+  .modal h3 {
+    margin: 0 0 16px;
+    color: var(--accent);
+    font-size: 16px;
+  }
+  .modal label {
+    display: block;
+    margin: 12px 0 4px;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .modal input, .modal textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font: inherit;
+  }
+  .modal input:focus, .modal textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(31,78,121,.15);
+  }
+  .modal .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .modal button {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font: inherit;
+  }
+  .modal button.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .modal button:hover { background: #f3f2ee; }
+  .modal button.primary:hover { background: #1a4267; }
+
+  /* ---- file upload zone ---- */
+  .upload-zone {
+    margin: 0 32px 12px;
+    padding: 16px;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    text-align: center;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    background: #fff;
+    transition: all .15s ease;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: #f6f9fc;
+    color: var(--accent);
+  }
+  .upload-zone .progress {
+    height: 3px;
+    background: var(--accent);
+    margin-top: 8px;
+    border-radius: 2px;
+    display: none;
+  }
+  .upload-zone.busy .progress { display: block; }
+
+  /* ---- source pane ---- */
+  .source-pane {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 480px;
+    background: #fff;
+    border-left: 1px solid var(--border);
+    box-shadow: -4px 0 16px rgba(0,0,0,.05);
+    z-index: 50;
+    overflow-y: auto;
+    padding: 20px 24px;
+  }
+  .source-pane.active { display: block; }
+  .source-pane .close {
+    float: right;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--muted);
+    padding: 0;
+    line-height: 1;
+  }
+  .source-pane h3 {
+    margin: 0 0 4px;
+    color: var(--accent);
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 13px;
+  }
+  .source-pane .meta {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+  }
+  .source-pane pre {
+    background: #f6f4ee;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--accent);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-lg);
+    font-size: 13px;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .2s, transform .2s;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { background: var(--warn); }
+</style>
+</head>
+<body>
+<header>
+  <h1>firm-bot <span style="color:var(--muted);font-weight:400;font-size:13px;margin-left:8px">local-first chatbot builder</span></h1>
+  <div class="meta" id="firm-meta">no firm selected</div>
+</header>
+
+<aside>
+  <h2>Firms</h2>
+  <ul class="firm-list" id="firm-list"></ul>
+  <div class="firm-actions">
+    <button class="primary" onclick="newFirm()">+ New firm</button>
+    <button onclick="showSettings()" id="btn-settings">Settings</button>
+    <button onclick="ingestActive()">Re-ingest</button>
+  </div>
+</aside>
+
+<main>
+  <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+    <input type="file" id="file-input" multiple accept=".pdf,.eml,.mbox,.docx" style="display:none">
+    <strong>Drop files here</strong> — or click to upload
+    <div class="progress" id="upload-progress"></div>
+  </div>
+  <div id="messages"><div class="empty" id="empty"><h2>Pick or create a firm</h2><p>Each firm has its own isolated document index.</p><p style="margin-top:24px">Tip: drop a PDF, .eml, .mbox, or .docx file into the upload zone above.</p></div></div>
+  <form id="chat-form" onsubmit="return submitQ(event)">
+    <textarea id="q-input" placeholder="Ask about the firm's documents…  e.g. what's our liability cap in the Acme MSA?" required></textarea>
+    <button type="submit" id="send-btn">Send</button>
+  </form>
+</main>
+
+<!-- New firm modal -->
+<div class="modal-bg" id="modal-firm">
+  <div class="modal">
+    <h3>Create a new firm</h3>
+    <label>Slug <span style="color:var(--muted);font-weight:400">(lowercase, alphanumeric, dash or underscore)</span></label>
+    <input id="firm-slug" placeholder="acme-llp">
+    <label>Display name</label>
+    <input id="firm-name" placeholder="Acme LLP">
+    <label>System prompt <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+    <textarea id="firm-prompt" rows="3" placeholder="You are a legal assistant for..."></textarea>
+    <div class="actions">
+      <button onclick="closeModal('firm')">Cancel</button>
+      <button class="primary" onclick="createFirm()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-bg" id="modal-settings">
+  <div class="modal">
+    <h3 id="settings-title">Settings</h3>
+    <label>Display name</label>
+    <input id="settings-name">
+    <label>LLM model override <span style="color:var(--muted);font-weight:400">(empty = use default)</span></label>
+    <input id="settings-model" placeholder="qwen2.5-coder:14b">
+    <label>System prompt</label>
+    <textarea id="settings-prompt" rows="4"></textarea>
+    <div class="actions">
+      <button onclick="closeModal('settings')">Cancel</button>
+      <button class="primary" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Source pane -->
+<div class="source-pane" id="source-pane">
+  <button class="close" onclick="closeSourcePane()">×</button>
+  <h3 id="source-marker"></h3>
+  <div class="meta" id="source-meta"></div>
+  <pre id="source-text"></pre>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let activeFirm = null;
+let history = [];
+let uploadChips = [];
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, {
+    headers: { 'content-type': 'application/json' },
+    ...opts,
+  });
+  if (!r.ok) {
+    let detail = '';
+    try { detail = (await r.json()).detail || ''; } catch (_) { detail = await r.text(); }
+    throw new Error(`${r.status} ${detail || r.statusText}`);
+  }
+  if (r.status === 204) return null;
+  return r.json();
+}
+
+function toast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+async function refreshFirms() {
+  const data = await api('/v1/firms');
+  const ul = document.getElementById('firm-list');
+  ul.innerHTML = '';
+  for (const f of data.firms) {
+    const li = document.createElement('li');
+    li.dataset.slug = f.slug;
+    li.innerHTML = `<span>${escapeHtml(f.name)}</span><span class="stats"></span>`;
+    li.onclick = () => selectFirm(f.slug);
+    if (f.slug === activeFirm) li.classList.add('active');
+    ul.appendChild(li);
+  }
+  for (const li of ul.children) {
+    try {
+      const s = await api(`/v1/firms/${li.dataset.slug}/stats`);
+      li.querySelector('.stats').textContent = `${s.chroma_chunks}`;
+    } catch (e) { /* ignore */ }
+  }
+}
+
+async function selectFirm(slug) {
+  activeFirm = slug;
+  history = [];
+  document.querySelectorAll('#firm-list li').forEach(li => li.classList.toggle('active', li.dataset.slug === slug));
+  document.getElementById('btn-settings').disabled = false;
+  try {
+    const cfg = await api(`/v1/firms/${slug}/config`);
+    document.getElementById('firm-meta').innerHTML =
+      `<span class="pill">${escapeHtml(cfg.name)}</span>` +
+      `<span>model: ${escapeHtml(cfg.llm_model || 'default')}</span>`;
+  } catch (e) { /* ignore */ }
+  document.getElementById('messages').innerHTML = '<div class="empty"><h2>Ask away</h2><p>Try a question grounded in the firm\'s documents.</p></div>';
+}
+
+function openModal(id) { document.getElementById(`modal-${id}`).classList.add('active'); }
+function closeModal(id) { document.getElementById(`modal-${id}`).classList.remove('active'); }
+
+function newFirm() {
+  document.getElementById('firm-slug').value = '';
+  document.getElementById('firm-name').value = '';
+  document.getElementById('firm-prompt').value = '';
+  openModal('firm');
+  setTimeout(() => document.getElementById('firm-slug').focus(), 50);
+}
+
+async function createFirm() {
+  const slug = document.getElementById('firm-slug').value.trim();
+  const name = document.getElementById('firm-name').value.trim();
+  const system_prompt = document.getElementById('firm-prompt').value;
+  if (!/^[a-z0-9][a-z0-9_-]{1,40}$/.test(slug)) {
+    toast('Invalid slug — use lowercase letters, digits, dashes', true);
+    return;
+  }
+  if (!name) { toast('Name is required', true); return; }
+  try {
+    await api('/v1/firms', { method: 'POST', body: JSON.stringify({ slug, name, system_prompt }) });
+    closeModal('firm');
+    toast(`Created ${name}`);
+    await refreshFirms();
+    await selectFirm(slug);
+  } catch (e) { toast(String(e), true); }
+}
+
+async function showSettings() {
+  if (!activeFirm) { toast('Pick a firm first', true); return; }
+  const cfg = await api(`/v1/firms/${activeFirm}/config`);
+  document.getElementById('settings-title').textContent = `Settings — ${cfg.name}`;
+  document.getElementById('settings-name').value = cfg.name || '';
+  document.getElementById('settings-model').value = cfg.llm_model || '';
+  document.getElementById('settings-prompt').value = cfg.system_prompt || '';
+  openModal('settings');
+}
+
+async function saveSettings() {
+  const name = document.getElementById('settings-name').value.trim();
+  const llm_model = document.getElementById('settings-model').value;
+  const system_prompt = document.getElementById('settings-prompt').value;
+  try {
+    await api(`/v1/firms/${activeFirm}/config`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name, llm_model, system_prompt }),
+    });
+    closeModal('settings');
+    toast('Settings saved');
+    await refreshFirms();
+    await selectFirm(activeFirm);
+  } catch (e) { toast(String(e), true); }
+}
+
+async function ingestActive() {
+  if (!activeFirm) { toast('Pick a firm first', true); return; }
+  toast('Ingesting…');
+  try {
+    const r = await api(`/v1/firms/${activeFirm}/ingest`, { method: 'POST' });
+    toast(`Indexed ${r.chunks_indexed} chunks from ${r.stats.documents_total} pages/messages`);
+    await refreshFirms();
+  } catch (e) { toast(String(e), true); }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// ---- upload zone ----
+const uploadZone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('file-input');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+async function handleFiles(files) {
+  if (!activeFirm) { toast('Pick a firm first', true); return; }
+  if (!files || !files.length) return;
+  uploadZone.classList.add('busy');
+  for (const file of files) {
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch(`/v1/firms/${activeFirm}/upload`, { method: 'POST', body: fd });
+      if (!r.ok) throw new Error(await r.text());
+      toast(`Uploaded ${file.name}`);
+    } catch (e) { toast(`Failed to upload ${file.name}: ${e}`, true); }
+  }
+  uploadZone.classList.remove('busy');
+  fileInput.value = '';
+  await ingestActive();
+}
+
+// ---- source pane ----
+function openSourcePane(marker, meta, text) {
+  document.getElementById('source-marker').textContent = marker;
+  document.getElementById('source-meta').textContent = meta || '';
+  document.getElementById('source-text').textContent = text;
+  document.getElementById('source-pane').classList.add('active');
+}
+function closeSourcePane() { document.getElementById('source-pane').classList.remove('active'); }
+
+// ---- chat ----
+function renderMsg(role, body, hits, issues, cited) {
+  const root = document.getElementById('messages');
+  const empty = document.getElementById('empty');
+  if (empty) empty.remove();
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+
+  let html = escapeHtml(body);
+  if (cited && cited.length) {
+    for (const c of cited) {
+      const re = new RegExp('\\[' + escapeRegex(c) + '\\]', 'g');
+      html = html.replace(re, `<span class="cite-chip" data-marker="${escapeHtml(c)}">[${escapeHtml(c)}]</span>`);
+    }
+  }
+  div.innerHTML = `<div class="role">${role}</div><div class="body">${html}</div>`;
+
+  if (issues && issues.length) {
+    const iss = document.createElement('div');
+    iss.className = 'issues';
+    iss.innerHTML = '<strong>⚠️ Citation guard flagged:</strong><br>' +
+      issues.map(i => `<div class="issue"><span class="v">${escapeHtml(i.verdict)}</span> — ${escapeHtml(i.claim.slice(0,140))} <em>(${escapeHtml(i.marker || 'no citation')})</em></div>`).join('');
+    div.appendChild(iss);
+  }
+  if (hits && hits.length) {
+    const h = document.createElement('div');
+    h.className = 'hits';
+    h.innerHTML = '<strong>Sources:</strong>' + hits.map((x,i) =>
+      `<details><summary>[${i+1}] ${escapeHtml(x.marker)} · score ${x.score}</summary><pre>${escapeHtml(x.preview)}</pre></details>`
+    ).join('');
+    div.appendChild(h);
+    // wire citation chips
+    div.querySelectorAll('.cite-chip').forEach(chip => {
+      const marker = chip.dataset.marker;
+      const hit = hits.find(h => h.marker === marker);
+      if (hit) chip.onclick = () => openSourcePane(marker, `chunk ${hit.chunk_id} · score ${hit.score}`, hit.preview);
+    });
+  }
+  root.appendChild(div);
+  root.scrollTop = root.scrollHeight;
+}
+
+async function submitQ(ev) {
+  ev.preventDefault();
+  if (!activeFirm) { toast('Pick a firm first', true); return false; }
+  const q = document.getElementById('q-input').value.trim();
+  if (!q) return false;
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  document.getElementById('q-input').value = '';
+  renderMsg('user', q, null, null, null);
+  try {
+    await streamQuery(q);
+  } catch (e) {
+    const root = document.getElementById('messages');
+    const d = document.createElement('div');
+    d.className = 'error';
+    d.textContent = String(e);
+    root.appendChild(d);
+  }
+  btn.disabled = false;
+  return false;
+}
+
+// Streaming query — uses SSE so tokens render as the LLM generates them.
+async function streamQuery(q) {
+  const root = document.getElementById('messages');
+  const empty = document.getElementById('empty');
+  if (empty) empty.remove();
+
+  // placeholder assistant div with a streaming cursor
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.innerHTML = '<div class="role">assistant · streaming</div><div class="body"></div>';
+  const body = div.querySelector('.body');
+  root.appendChild(div);
+  root.scrollTop = root.scrollHeight;
+
+  let buffer = '';
+  let hits = [];
+  let cited = [];
+  let issues = [];
+
+  const r = await fetch(`/v1/firms/${activeFirm}/query/stream`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ question: q, history }),
+  });
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`${r.status} ${txt}`);
+  }
+
+  const reader = r.body.getReader();
+  const decoder = new TextDecoder();
+  let leftover = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    leftover += decoder.decode(value, { stream: true });
+    // SSE events are separated by blank lines
+    let idx;
+    while ((idx = leftover.indexOf('\n\n')) !== -1) {
+      const frame = leftover.slice(0, idx);
+      leftover = leftover.slice(idx + 2);
+      const ev = parseSSEFrame(frame);
+      if (!ev) continue;
+      const data = safeParse(ev.data);
+      if (ev.event === 'meta') {
+        hits = data.hits || [];
+        // attach the citations pane now, populated later when tokens complete
+        const hitsEl = document.createElement('div');
+        hitsEl.className = 'hits';
+        hitsEl.id = 'streaming-hits';
+        hitsEl.innerHTML = '<strong>Sources:</strong>' + hits.map((x,i) =>
+          `<details><summary>[${i+1}] ${escapeHtml(x.marker)} · score ${x.score}</summary><pre>${escapeHtml(x.preview)}</pre></details>`
+        ).join('');
+        div.appendChild(hitsEl);
+      } else if (ev.event === 'token') {
+        buffer += data.delta || '';
+        body.textContent = buffer + ' ▍';  // streaming cursor
+        root.scrollTop = root.scrollHeight;
+      } else if (ev.event === 'done') {
+        buffer = data.answer || buffer;
+        cited = data.cited || [];
+        issues = data.issues || [];
+      } else if (ev.event === 'error') {
+        throw new Error(data.message || 'stream error');
+      }
+    }
+  }
+
+  // final render: re-render with citations highlighted
+  div.remove();
+  renderMsg('assistant', buffer, hits, issues, cited);
+  history.push({ role: 'user', content: q });
+  history.push({ role: 'assistant', content: buffer });
+  if (history.length > 8) history = history.slice(-8);
+}
+
+function parseSSEFrame(frame) {
+  const lines = frame.split('\n');
+  let event = 'message';
+  let data = '';
+  for (const ln of lines) {
+    if (ln.startsWith('event:')) event = ln.slice(6).trim();
+    else if (ln.startsWith('data:')) data += ln.slice(5).trim();
+  }
+  if (!data) return null;
+  return { event, data };
+}
+
+function safeParse(s) {
+  try { return JSON.parse(s); } catch (_) { return {}; }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModal('firm');
+    closeModal('settings');
+    closeSourcePane();
+  }
+});
+
+refreshFirms();
+</script>
+</body>
+</html>

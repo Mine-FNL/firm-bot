@@ -1,0 +1,46 @@
+# Build / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.so
+.tox/
+.venv/
+venv/
+env/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Runtime state — never commit the firm's documents or indexes
+data/
+!data/.gitkeep
+!data/config.example.yaml
+
+# Local config
+.env
+.env.*
+!.env.example
+
+# Test fixtures that contain real documents
+tests/fixtures/private/
+*.bak
+
+# Coverage / build artefacts
+site/
+.tox/
+.nox/

@@ -1,0 +1,38 @@
+site_name: firm-bot
+site_description: Multi-tenant local-first chatbot builder for professional services firms.
+site_url: https://github.com/firm-bot/firm-bot
+repo_url: https://github.com/firm-bot/firm-bot
+repo_name: firm-bot/firm-bot
+edit_uri: edit/main/docs/
+
+theme:
+  name: readthedocs
+  highlightjs: true
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Architecture: architecture.md
+  - CLI: cli.md
+  - HTTP API: api.md
+  - Configuration: configuration.md
+  - Deployment: deployment.md
+  - Operations: operations.md
+  - Performance: PERFORMANCE.md
+  - Benchmarks: benchmarks.md
+  - Security: security.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md

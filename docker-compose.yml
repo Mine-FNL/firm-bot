@@ -1,0 +1,44 @@
+# firm-bot + Ollama side-by-side.
+#
+# Bring up:
+#     docker compose up -d
+#
+# Then open http://localhost:7860.
+#
+# Ollama is exposed on 11434 so you can pull models from the host:
+#     ollama pull qwen2.5-coder:14b
+#
+# Data is persisted under ./data on the host.
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: firm-bot-ollama
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "11434:11434"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:11434/api/tags"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+
+  firm-bot:
+    build: .
+    container_name: firm-bot
+    restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      FIRM_BOT_OLLAMA_HOST: http://ollama:11434
+      FIRM_BOT_DATA_DIR: /app/data
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./data:/app/data
+
+volumes:
+  ollama-data:

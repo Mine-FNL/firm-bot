@@ -1,0 +1,82 @@
+{
+  "cases": [
+    {
+      "question": "What's the cap on liability?",
+      "expected_source": "globex_msa",
+      "expected_keywords": [
+        "twelve (12) months",
+        "fees paid"
+      ]
+    },
+    {
+      "question": "How long does the NDA last?",
+      "expected_source": "initech_nda",
+      "expected_keywords": [
+        "three (3) years",
+        "five (5) years"
+      ]
+    },
+    {
+      "question": "What's the settlement amount?",
+      "expected_source": "umbrella_settlement",
+      "expected_keywords": [
+        "$2,400,000",
+        "thirty (30) days"
+      ]
+    },
+    {
+      "question": "What is the CEO's severance?",
+      "expected_source": "wayne_employment",
+      "expected_keywords": [
+        "twenty-four (24) months",
+        "Base Salary"
+      ]
+    },
+    {
+      "question": "What is the audit fee cap?",
+      "expected_source": "stark_audit",
+      "expected_keywords": [
+        "$450,000",
+        "out-of-pocket expenses"
+      ]
+    },
+    {
+      "question": "What are the Partner hourly rates?",
+      "expected_source": "globex_msa",
+      "expected_keywords": [
+        "$550",
+        "$750"
+      ]
+    },
+    {
+      "question": "What's the severance period for the CEO?",
+      "expected_source": "wayne_employment",
+      "expected_keywords": [
+        "twenty-four (24) months"
+      ]
+    },
+    {
+      "question": "What's the NDA governing law?",
+      "expected_source": "initech_nda",
+      "expected_keywords": [
+        "Delaware"
+      ]
+    },
+    {
+      "question": "What is the bonus target?",
+      "expected_source": "wayne_employment",
+      "expected_keywords": [
+        "two hundred percent",
+        "200%"
+      ]
+    },
+    {
+      "question": "What's the mutual release clause?",
+      "expected_source": "umbrella_settlement",
+      "expected_keywords": [
+        "Settlement Amount",
+        "Effective Date"
+      ]
+    }
+  ]
+}

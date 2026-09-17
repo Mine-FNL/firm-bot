@@ -1,0 +1,306 @@
+{
+  "cases": [
+    {
+      "question": "What is the governing law?",
+      "chunker": "firm_bot",
+      "expected_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 24.623584002256393,
+      "top_hit_id": "814078009800f31d:22",
+      "top_hit_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "extra": {}
+    },
+    {
+      "question": "What is the governing law?",
+      "chunker": "naive",
+      "expected_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 10.266166995279491,
+      "top_hit_id": "c4e11edc2092145d:naive-2000",
+      "top_hit_source": "PACIRA PHARMACEUTICALS, INC. - A_R STRATEGIC LICENSING, DISTRIBUTION AND MARKETING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is there an exclusivity provision?",
+      "chunker": "firm_bot",
+      "expected_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 13.263500004541129,
+      "top_hit_id": "7189bf5cadc6a721:3",
+      "top_hit_source": "KIROMICBIOPHARMA,INC_05_11_2020-EX-10.23-CONSULTING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is there an exclusivity provision?",
+      "chunker": "naive",
+      "expected_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 8.540291979443282,
+      "top_hit_id": "c4e11edc2092145d:naive-1000",
+      "top_hit_source": "PACIRA PHARMACEUTICALS, INC. - A_R STRATEGIC LICENSING, DISTRIBUTION AND MARKETING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is solicitation of customers restricted?",
+      "chunker": "firm_bot",
+      "expected_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 11.76958397263661,
+      "top_hit_id": "89edd72a3fc50ec7:3",
+      "top_hit_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is solicitation of customers restricted?",
+      "chunker": "naive",
+      "expected_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 8.12187499832362,
+      "top_hit_id": "d14b0f598955509c:naive-2000",
+      "top_hit_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Can the contract be assigned to a third party?",
+      "chunker": "firm_bot",
+      "expected_source": "WHITESMOKE,INC_11_08_2011-EX-10.26-PROMOTION AND DISTRIBUTION AGREEMENT.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 12.220249976962805,
+      "top_hit_id": "9093622b7a05b92e:7",
+      "top_hit_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Can the contract be assigned to a third party?",
+      "chunker": "naive",
+      "expected_source": "WHITESMOKE,INC_11_08_2011-EX-10.26-PROMOTION AND DISTRIBUTION AGREEMENT.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 8.146666979882866,
+      "top_hit_id": "9847be5aece72638:naive-0",
+      "top_hit_source": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "What license is granted?",
+      "chunker": "firm_bot",
+      "expected_source": "WHITESMOKE,INC_11_08_2011-EX-10.26-PROMOTION AND DISTRIBUTION AGREEMENT.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 15.497291984502226,
+      "top_hit_id": "34cd07a44932894a:5",
+      "top_hit_source": "WHITESMOKE,INC_11_08_2011-EX-10.26-PROMOTION AND DISTRIBUTION AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "What license is granted?",
+      "chunker": "naive",
+      "expected_source": "WHITESMOKE,INC_11_08_2011-EX-10.26-PROMOTION AND DISTRIBUTION AGREEMENT.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 8.59758403385058,
+      "top_hit_id": "38b64d26db6df23a:naive-4000",
+      "top_hit_source": "PACIRA PHARMACEUTICALS, INC. - A_R STRATEGIC LICENSING, DISTRIBUTION AND MARKETING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Does either party have audit rights?",
+      "chunker": "firm_bot",
+      "expected_source": "WHITESMOKE,INC_11_08_2011-EX-10.26-PROMOTION AND DISTRIBUTION AGREEMENT.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 11.673416011035442,
+      "top_hit_id": "5c003bf69c239f05:4",
+      "top_hit_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Does either party have audit rights?",
+      "chunker": "naive",
+      "expected_source": "WHITESMOKE,INC_11_08_2011-EX-10.26-PROMOTION AND DISTRIBUTION AGREEMENT.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 8.4870409918949,
+      "top_hit_id": "5c003bf69c239f05:naive-5000",
+      "top_hit_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "extra": {}
+    },
+    {
+      "question": "How long is the warranty?",
+      "chunker": "firm_bot",
+      "expected_source": "LohaCompanyltd_20191209_F-1_EX-10.16_11917878_EX-10.16_Supply Agreement.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 10.673374985344708,
+      "top_hit_id": "814078009800f31d:2",
+      "top_hit_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "extra": {}
+    },
+    {
+      "question": "How long is the warranty?",
+      "chunker": "naive",
+      "expected_source": "LohaCompanyltd_20191209_F-1_EX-10.16_11917878_EX-10.16_Supply Agreement.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 8.391624956857413,
+      "top_hit_id": "528e437b07fd4eab:naive-4000",
+      "top_hit_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "What insurance is required?",
+      "chunker": "firm_bot",
+      "expected_source": "LohaCompanyltd_20191209_F-1_EX-10.16_11917878_EX-10.16_Supply Agreement.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 11.145541968289763,
+      "top_hit_id": "bcf62d4074ccb4c8:2",
+      "top_hit_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "extra": {}
+    },
+    {
+      "question": "What insurance is required?",
+      "chunker": "naive",
+      "expected_source": "LohaCompanyltd_20191209_F-1_EX-10.16_11917878_EX-10.16_Supply Agreement.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 9.299500030465424,
+      "top_hit_id": "31f0d68f0924d97d:naive-3000",
+      "top_hit_source": "PACIRA PHARMACEUTICALS, INC. - A_R STRATEGIC LICENSING, DISTRIBUTION AND MARKETING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is there a non-compete clause?",
+      "chunker": "firm_bot",
+      "expected_source": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 10.139834019355476,
+      "top_hit_id": "bded471d251da605:0",
+      "top_hit_source": "PACIRA PHARMACEUTICALS, INC. - A_R STRATEGIC LICENSING, DISTRIBUTION AND MARKETING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is there a non-compete clause?",
+      "chunker": "naive",
+      "expected_source": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 8.248624973930418,
+      "top_hit_id": "bded471d251da605:naive-0",
+      "top_hit_source": "PACIRA PHARMACEUTICALS, INC. - A_R STRATEGIC LICENSING, DISTRIBUTION AND MARKETING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is there a non-compete clause?",
+      "chunker": "firm_bot",
+      "expected_source": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 10.499916970729828,
+      "top_hit_id": "bded471d251da605:0",
+      "top_hit_source": "PACIRA PHARMACEUTICALS, INC. - A_R STRATEGIC LICENSING, DISTRIBUTION AND MARKETING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is there a non-compete clause?",
+      "chunker": "naive",
+      "expected_source": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT.pdf",
+      "precision_at_k": 0.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 7.945041987113655,
+      "top_hit_id": "bded471d251da605:naive-0",
+      "top_hit_source": "PACIRA PHARMACEUTICALS, INC. - A_R STRATEGIC LICENSING, DISTRIBUTION AND MARKETING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is there a revenue or profit share?",
+      "chunker": "firm_bot",
+      "expected_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 10.259709029924124,
+      "top_hit_id": "337fef67e9d60f90:0",
+      "top_hit_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is there a revenue or profit share?",
+      "chunker": "naive",
+      "expected_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 8.430874964687973,
+      "top_hit_id": "0407ae20ddb047de:naive-3000",
+      "top_hit_source": "VEONEER,INC_02_21_2020-EX-10.11-JOINT VENTURE AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Are there liquidated damages?",
+      "chunker": "firm_bot",
+      "expected_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 10.95666701439768,
+      "top_hit_id": "ff94de80f01f9ea6:4",
+      "top_hit_source": "CENTRACKINTERNATIONALINC_10_29_1999-EX-10.3-WEB SITE HOSTING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Are there liquidated damages?",
+      "chunker": "naive",
+      "expected_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 8.16262501757592,
+      "top_hit_id": "df7136a00a4f65e7:naive-1000",
+      "top_hit_source": "PACIRA PHARMACEUTICALS, INC. - A_R STRATEGIC LICENSING, DISTRIBUTION AND MARKETING AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is there a covenant not to sue?",
+      "chunker": "firm_bot",
+      "expected_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 10.864250012673438,
+      "top_hit_id": "89edd72a3fc50ec7:7",
+      "top_hit_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "extra": {}
+    },
+    {
+      "question": "Is there a covenant not to sue?",
+      "chunker": "naive",
+      "expected_source": "DovaPharmaceuticalsInc_20181108_10-Q_EX-10.2_11414857_EX-10.2_Promotion Agreement.pdf",
+      "precision_at_k": 1.0,
+      "keyword_coverage": 0.0,
+      "retrieval_ms": 8.508084050845355,
+      "top_hit_id": "89edd72a3fc50ec7:naive-4000",
+      "top_hit_source": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT.pdf",
+      "extra": {}
+    }
+  ],
+  "p50_retrieval_ms": {
+    "firm_bot": 11.145541968289763,
+    "naive": 8.430874964687973
+  },
+  "p95_retrieval_ms": {
+    "firm_bot": 15.497291984502226,
+    "naive": 9.299500030465424
+  },
+  "mean_precision_at_k": {
+    "firm_bot": 0.5384615384615384,
+    "naive": 0.46153846153846156
+  },
+  "mean_keyword_coverage": {
+    "firm_bot": 0.0,
+    "naive": 0.0
+  }
+}

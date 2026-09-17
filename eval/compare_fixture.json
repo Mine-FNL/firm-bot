@@ -1,0 +1,459 @@
+{
+  "cases": [
+    {
+      "question": "What's the cap on liability?",
+      "expected_source": "globex_msa",
+      "expected_keywords": [
+        "twelve (12) months",
+        "fees paid"
+      ]
+    },
+    {
+      "question": "How long does the NDA last?",
+      "expected_source": "initech_nda",
+      "expected_keywords": [
+        "three (3) years",
+        "five (5) years"
+      ]
+    },
+    {
+      "question": "What's the settlement amount?",
+      "expected_source": "umbrella_settlement",
+      "expected_keywords": [
+        "$2,400,000",
+        "thirty (30) days"
+      ]
+    },
+    {
+      "question": "What is the CEO's severance?",
+      "expected_source": "wayne_employment",
+      "expected_keywords": [
+        "twenty-four (24) months",
+        "Base Salary"
+      ]
+    },
+    {
+      "question": "What is the audit fee cap?",
+      "expected_source": "stark_audit",
+      "expected_keywords": [
+        "$450,000",
+        "out-of-pocket expenses"
+      ]
+    },
+    {
+      "question": "What are the Partner hourly rates?",
+      "expected_source": "globex_msa",
+      "expected_keywords": [
+        "$550",
+        "$750"
+      ]
+    },
+    {
+      "question": "What's the severance period for the CEO?",
+      "expected_source": "wayne_employment",
+      "expected_keywords": [
+        "twenty-four (24) months"
+      ]
+    },
+    {
+      "question": "What's the NDA governing law?",
+      "expected_source": "initech_nda",
+      "expected_keywords": [
+        "Delaware"
+      ]
+    },
+    {
+      "question": "What is the bonus target?",
+      "expected_source": "wayne_employment",
+      "expected_keywords": [
+        "two hundred percent",
+        "200%"
+      ]
+    },
+    {
+      "question": "What's the mutual release clause?",
+      "expected_source": "umbrella_settlement",
+      "expected_keywords": [
+        "Settlement Amount",
+        "Effective Date"
+      ]
+    },
+    {
+      "question": "What is the limitation of liability in the Acme long-form MSA?",
+      "expected_source": "acme_msa_long",
+      "expected_keywords": [
+        "twelve (12) months",
+        "fees paid",
+        "Customer"
+      ]
+    },
+    {
+      "question": "What is the limitation of liability in the Hooli MSA?",
+      "expected_source": "hooli_msa",
+      "expected_keywords": [
+        "two times",
+        "2x"
+      ]
+    },
+    {
+      "question": "How long are confidentiality obligations in the Acme long-form MSA?",
+      "expected_source": "acme_msa_long",
+      "expected_keywords": [
+        "seven (7) years"
+      ]
+    },
+    {
+      "question": "What is the audit reportable condition clause?",
+      "expected_source": "stark_audit",
+      "expected_keywords": [
+        "Reportable Conditions",
+        "Audit Committee"
+      ]
+    },
+    {
+      "question": "What are the Senior Partner hourly rates in the Acme MSA?",
+      "expected_source": "acme_msa_long",
+      "expected_keywords": [
+        "$850"
+      ]
+    },
+    {
+      "question": "What is the Force Majeure definition in the Globex MSA?",
+      "expected_source": "globex_msa",
+      "expected_keywords": [
+        "Force Majeure",
+        "acts of God"
+      ]
+    },
+    {
+      "question": "What's the confidentiality survival period after termination?",
+      "expected_source": "acme_msa_long",
+      "expected_keywords": [
+        "seven (7) years",
+        "survive"
+      ]
+    },
+    {
+      "question": "What's the NDA's confidentiality survival?",
+      "expected_source": "initech_nda",
+      "expected_keywords": [
+        "five (5) years"
+      ]
+    },
+    {
+      "question": "What's the late payment interest rate?",
+      "expected_source": "acme_msa_long",
+      "expected_keywords": [
+        "one and one-half percent",
+        "1.5%"
+      ]
+    },
+    {
+      "question": "What is the auto-renewal notice period?",
+      "expected_source": "acme_msa_long",
+      "expected_keywords": [
+        "sixty (60) days"
+      ]
+    },
+    {
+      "question": "What is the royalty rate in the Soylent licensing agreement?",
+      "expected_source": "soylent_license",
+      "expected_keywords": [
+        "8%",
+        "Net Sales"
+      ]
+    },
+    {
+      "question": "Who owns the intellectual property in the Soylent license?",
+      "expected_source": "soylent_license",
+      "expected_keywords": [
+        "Licensor",
+        "retains"
+      ]
+    },
+    {
+      "question": "What is the warranty disclaimer in the Pied Piper license?",
+      "expected_source": "piedpiper_license",
+      "expected_keywords": [
+        "AS IS",
+        "disclaimer"
+      ]
+    },
+    {
+      "question": "Can the Tyrell license be assigned to a third party?",
+      "expected_source": "tyrell_license",
+      "expected_keywords": [
+        "consent",
+        "written approval"
+      ]
+    },
+    {
+      "question": "What is the monthly rent for the Vandelay warehouse lease?",
+      "expected_source": "vandelay_lease",
+      "expected_keywords": [
+        "$12,500",
+        "month"
+      ]
+    },
+    {
+      "question": "What is the security deposit for the Cyberdyne office lease?",
+      "expected_source": "cyberdyne_lease",
+      "expected_keywords": [
+        "$75,000"
+      ]
+    },
+    {
+      "question": "What is the profit split in the Sterling Cooper partnership?",
+      "expected_source": "sterling_partnership",
+      "expected_keywords": [
+        "60%",
+        "40%"
+      ]
+    },
+    {
+      "question": "What are the partner withdrawal rights?",
+      "expected_source": "sterling_partnership",
+      "expected_keywords": [
+        "ninety (90) days",
+        "written notice"
+      ]
+    },
+    {
+      "question": "What is the response time SLA in the Massive Dynamic support agreement?",
+      "expected_source": "massive_dynamic_sla",
+      "expected_keywords": [
+        "four (4) hours",
+        "Severity 1"
+      ]
+    },
+    {
+      "question": "What are the support tier hours in the Oscorp agreement?",
+      "expected_source": "oscorp_sla",
+      "expected_keywords": [
+        "24/7",
+        "business hours"
+      ]
+    },
+    {
+      "question": "What is the notice period for non-renewal in the Pied Piper employment agreement?",
+      "expected_source": "piedpiper_employment",
+      "expected_keywords": [
+        "sixty (60) days"
+      ]
+    },
+    {
+      "question": "What is the non-compete duration in the Soylent employment agreement?",
+      "expected_source": "soylent_employment",
+      "expected_keywords": [
+        "twelve (12) months"
+      ]
+    },
+    {
+      "question": "What is the equity vesting schedule in the Pied Piper employment agreement?",
+      "expected_source": "piedpiper_employment",
+      "expected_keywords": [
+        "four (4) years",
+        "cliff"
+      ]
+    },
+    {
+      "question": "What is the statute of limitations in the Wonka settlement release?",
+      "expected_source": "wonka_settlement",
+      "expected_keywords": [
+        "two (2) years"
+      ]
+    },
+    {
+      "question": "Who pays the arbitration costs in the Cyberdyne dispute resolution agreement?",
+      "expected_source": "cyberdyne_arbitration",
+      "expected_keywords": [
+        "each party",
+        "own costs"
+      ]
+    },
+    {
+      "question": "What is the break-up fee in the Tyrell acquisition LOI?",
+      "expected_source": "tyrell_loi",
+      "expected_keywords": [
+        "$5,000,000"
+      ]
+    },
+    {
+      "question": "What is the exclusivity period in the Initech LOI?",
+      "expected_source": "initech_loi",
+      "expected_keywords": [
+        "forty-five (45) days"
+      ]
+    },
+    {
+      "question": "Who owns pre-existing IP in the Massive Dynamic joint venture?",
+      "expected_source": "massive_dynamic_jv",
+      "expected_keywords": [
+        "Background IP",
+        "own"
+      ]
+    },
+    {
+      "question": "What is the revenue share in the Globex-Wayne joint venture?",
+      "expected_source": "globex_wayne_jv",
+      "expected_keywords": [
+        "50%",
+        "50%"
+      ]
+    },
+    {
+      "question": "What is the option-to-renew term for the Cyberdyne lease?",
+      "expected_source": "cyberdyne_lease",
+      "expected_keywords": [
+        "five (5) years"
+      ]
+    },
+    {
+      "question": "What is the Force Majeure definition in the Acme MSA?",
+      "expected_source": "acme_msa_long",
+      "expected_keywords": [
+        "beyond",
+        "reasonable control"
+      ]
+    },
+    {
+      "question": "What is the audit reportable condition notification timeline?",
+      "expected_source": "stark_audit",
+      "expected_keywords": [
+        "promptly",
+        "during the engagement"
+      ]
+    },
+    {
+      "question": "What is the data breach notification timeline in the Cyberdyne DPA?",
+      "expected_source": "cyberdyne_dpa",
+      "expected_keywords": [
+        "seventy-two (72) hours"
+      ]
+    },
+    {
+      "question": "What is the data retention period in the Hooli DPA?",
+      "expected_source": "hooli_dpa",
+      "expected_keywords": [
+        "thirty (30) days",
+        "termination"
+      ]
+    },
+    {
+      "question": "What is the GDPR data subject rights clause in the Massive Dynamic DPA?",
+      "expected_source": "massive_dynamic_dpa",
+      "expected_keywords": [
+        "Data Subject",
+        "rights"
+      ]
+    },
+    {
+      "question": "What is the regulatory change clause in the Soylent MSA?",
+      "expected_source": "soylent_msa_reg",
+      "expected_keywords": [
+        "Change in Law",
+        "equitable adjustment"
+      ]
+    },
+    {
+      "question": "What is the export control clause in the Tyrell technology license?",
+      "expected_source": "tyrell_license",
+      "expected_keywords": [
+        "Export Administration",
+        "EAR"
+      ]
+    },
+    {
+      "question": "What is the cyber liability coverage amount in the Pied Piper insurance schedule?",
+      "expected_source": "piedpiper_insurance",
+      "expected_keywords": [
+        "$10,000,000"
+      ]
+    },
+    {
+      "question": "What is the deductible for the professional liability policy in the Oscorp insurance schedule?",
+      "expected_source": "oscorp_insurance",
+      "expected_keywords": [
+        "$50,000",
+        "deductible"
+      ]
+    },
+    {
+      "question": "What is the warranty period for the Tyrell supply agreement?",
+      "expected_source": "tyrell_supply",
+      "expected_keywords": [
+        "twenty-four (24) months"
+      ]
+    },
+    {
+      "question": "What is the minimum order quantity in the Soylent supply agreement?",
+      "expected_source": "soylent_supply",
+      "expected_keywords": [
+        "10,000 units"
+      ]
+    },
+    {
+      "question": "What is the brand approval timeline in the Vandelay co-marketing agreement?",
+      "expected_source": "vandelay_marketing",
+      "expected_keywords": [
+        "ten (10) business days"
+      ]
+    },
+    {
+      "question": "What is the revenue share in the Pied Piper co-marketing agreement?",
+      "expected_source": "piedpiper_marketing",
+      "expected_keywords": [
+        "70%",
+        "30%"
+      ]
+    },
+    {
+      "question": "What's the cap on liability in any Initech agreement?",
+      "expected_source": "initech_msa",
+      "expected_keywords": [
+        "two times (2x)",
+        "fees paid"
+      ]
+    },
+    {
+      "question": "What's the indemnification scope in the Sterling Cooper partnership?",
+      "expected_source": "sterling_partnership",
+      "expected_keywords": [
+        "breach",
+        "third-party claim"
+      ]
+    },
+    {
+      "question": "What is the bonus pool in the Stark Industries executive bonus plan?",
+      "expected_source": "stark_bonus",
+      "expected_keywords": [
+        "$25,000,000",
+        "annual"
+      ]
+    },
+    {
+      "question": "What is the retention bonus in the Tyrell retention agreement?",
+      "expected_source": "tyrell_retention",
+      "expected_keywords": [
+        "$200,000",
+        "eighteen months"
+      ]
+    },
+    {
+      "question": "What are the termination notice and cure provisions across the firm's contracts?",
+      "expected_source": "globex_msa",
+      "expected_keywords": [
+        "thirty (30) days",
+        "uncured"
+      ]
+    },
+    {
+      "question": "What is the audit and inspection right in the Wayne-IBM supplier agreement?",
+      "expected_source": "wayne_ibm_supply",
+      "expected_keywords": [
+        "once per year",
+        "reasonable notice"
+      ]
+    }
+  ]
+}

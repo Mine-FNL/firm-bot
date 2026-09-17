@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "question": "What's the cap on liability in the MSA?",
+      "expected_sources": ["acme_msa.pdf"],
+      "expected_keywords": ["twelve (12) months", "fees paid"]
+    },
+    {
+      "question": "How long does the NDA's confidentiality last?",
+      "expected_sources": ["nda.pdf"],
+      "expected_keywords": ["three (3) years", "five (5) years"]
+    },
+    {
+      "question": "What are the hourly rates?",
+      "expected_sources": ["acme_msa"],
+      "expected_keywords": ["$650", "$475", "$210"]
+    }
+  ]
+}

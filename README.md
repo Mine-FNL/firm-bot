@@ -494,19 +494,23 @@ drafts and a frame-by-frame demo GIF plan; `MARKETING.md` supersedes it.
 
 ## Marketing assets
 
-All rendered with Pillow (no external SVG tool) — regenerable via
-`scripts/marketing/render_*.py`:
+Visual identity and story arc are locked in
+[`docs/marketing/DESIGN.md`](docs/marketing/DESIGN.md) — read it before
+publishing anything new. All assets rendered with Pillow (no external
+SVG tool) and the demo video assembled with ffmpeg — both regenerable
+via `scripts/marketing/render_*.py`:
 
 | File | Size | Use |
 |------|------|-----|
-| `docs/assets/marketing/hero.png`       | 1600x900  | README top, GitHub OG variant |
+| `docs/assets/marketing/hero.png`       | 1600x900   | README top, GitHub OG variant |
 | `docs/assets/marketing/architecture.png` | 1600x1000 | six-stage pipeline explainer   |
-| `docs/assets/marketing/benchmark.png`  | 1600x900  | CUAD precision@k chart         |
-| `docs/assets/marketing/comparison.png` | 1600x1000 | vs Harvey/Spellbook/Glean      |
-| `docs/assets/marketing/why_local.png` | 1600x1000 | "your data, your box" angle    |
-| `docs/assets/marketing/demo.gif`       | 1200x720  | 7s UI walkthrough loop         |
-| `docs/assets/marketing/demo.mp4`       | H.264     | same, higher quality           |
-| `docs/assets/social-preview.png`       | 1280x640  | GitHub repo social preview     |
+| `docs/assets/marketing/benchmark.png`  | 1600x900   | CUAD precision@k chart         |
+| `docs/assets/marketing/comparison.png` | 1600x1000  | vs Harvey/Spellbook/Glean      |
+| `docs/assets/marketing/why_local.png` | 1600x1000  | "your data, your box" angle    |
+| `docs/assets/marketing/demo.gif`       | 1200x720   | 7s UI walkthrough loop         |
+| `docs/assets/marketing/demo.mp4`       | H.264      | same, higher quality           |
+| `docs/assets/marketing/demo-video.mp4` | 1920x1080  | **full 66-second demo video**  |
+| `docs/assets/social-preview.png`       | 1280x640   | GitHub repo social preview     |
 
 These are ready to publish. Drop them into the matching channels;
 tweak voice for the audience.

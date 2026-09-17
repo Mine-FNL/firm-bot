@@ -3,6 +3,11 @@
 Everything you need to launch firm-bot in public. Pick the channels
 that fit your voice; don't blast all of them at once.
 
+> **Before you publish anything, read [`docs/marketing/DESIGN.md`](docs/marketing/DESIGN.md).**
+> It locks the palette, voice, and story arc every asset below draws
+> from. Mixing old and new visual identity in the same campaign is
+> worse than either alone.
+
 ## Assets
 
 All in `docs/assets/marketing/`:
@@ -13,8 +18,10 @@ All in `docs/assets/marketing/`:
 | `architecture.png`    | 1600x1000 — six-stage pipeline explainer       | 92 KB  |
 | `comparison.png`      | 1600x1000 — vs Harvey / Spellbook / Glean     | 131 KB |
 | `why_local.png`       | 1600x1000 — "your data, your box" angle       | 87 KB  |
+| `benchmark.png`       | 1600x900 — CUAD precision@k bar chart         | 62 KB  |
 | `demo.gif`            | 1200x720 — 7-second UI walkthrough loop       | 175 KB |
-| `demo.mp4`            | H.264 of the above, 84 KB                     | 84 KB  |
+| `demo.mp4`            | H.264 of the above                            | 84 KB  |
+| `demo-video.mp4`      | **1920x1080 — full 66-second demo video**     | 1.0 MB |
 | `social-preview.png`  | 1280x640 — set as the repo's social preview   | 84 KB  |
 
 Regenerate any of these by running the matching `scripts/marketing/render_*.py`.

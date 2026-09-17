@@ -21,11 +21,16 @@ All in `docs/assets/marketing/`:
 | `benchmark.png`       | 1600x900 — CUAD precision@k bar chart         | 62 KB  |
 | `demo.gif`            | 1200x720 — 7-second UI walkthrough loop       | 175 KB |
 | `demo.mp4`            | H.264 of the above                            | 84 KB  |
-| `demo-video.mp4`      | 1920x1080 — full 66-second demo video         | 1.0 MB |
-| `why-firm-bot.mp4`    | 1920x1080 — 43s pain-point explainer          | 485 KB |
-| `what-is-it.mp4`      | 1920x1080 — 38s pipeline + chat card          | 443 KB |
-| `magic-sauce.mp4`     | 1920x1080 — 48s technical differentiators      | 566 KB |
+| `demo-video.mp4`      | 1920x1080 — 66s demo video (silent)            | 1.0 MB |
+| `why-firm-bot.mp4`    | 1920x1080 — 51s explainer + audio narration   | 1.9 MB |
+| `what-is-it.mp4`      | 1920x1080 — 44s explainer + audio narration   | 1.5 MB |
+| `magic-sauce.mp4`     | 1920x1080 — 55s explainer + audio narration   | 1.7 MB |
 | `social-preview.png`  | 1280x640 — set as the repo's social preview   | 84 KB  |
+
+The three explainer videos ship with audio narration generated via
+macOS `say` (Alex voice, US English, AAC @ 192kbps mono). Rendered
+at 30fps with H.264 preset slow / crf 18 for cleaner quality than
+the first pass. Regenerable via `scripts/marketing/render_explainers_v2.py`.
 
 Regenerate any of these by running the matching `scripts/marketing/render_*.py`.
 

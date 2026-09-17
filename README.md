@@ -510,10 +510,14 @@ via `scripts/marketing/render_*.py`:
 | `docs/assets/marketing/demo.gif`       | 1200x720   | 7s UI walkthrough loop         |
 | `docs/assets/marketing/demo.mp4`       | H.264      | same, higher quality           |
 | `docs/assets/marketing/demo-video.mp4` | 1920x1080  | **66-second demo video** (UI walkthrough) |
-| `docs/assets/marketing/why-firm-bot.mp4` | 1920x1080 | **43-second explainer** (pain point) |
-| `docs/assets/marketing/what-is-it.mp4` | 1920x1080 | **38-second explainer** (pipeline + chat card) |
-| `docs/assets/marketing/magic-sauce.mp4` | 1920x1080 | **48-second explainer** (chunker + citations + guard) |
+| `docs/assets/marketing/why-firm-bot.mp4` | 1920x1080 | **51-second explainer + audio narration** (pain point) |
+| `docs/assets/marketing/what-is-it.mp4` | 1920x1080 | **44-second explainer + audio narration** (pipeline + chat card) |
+| `docs/assets/marketing/magic-sauce.mp4` | 1920x1080 | **55-second explainer + audio narration** (chunker + citations + guard) |
 | `docs/assets/social-preview.png`       | 1280x640   | GitHub repo social preview     |
+
+The three explainer videos use macOS `say` for narration (Alex voice,
+US English). 30fps, H.264 preset slow / crf 18 — visibly cleaner
+than the first pass. Regenerable via `scripts/marketing/render_explainers_v2.py`.
 
 These are ready to publish. Drop them into the matching channels;
 tweak voice for the audience.

@@ -15,6 +15,14 @@
 [![mypy strict](https://img.shields.io/badge/types-mypy--strict-blue)](https://mypy.readthedocs.io)
 [![Stars](https://img.shields.io/github/stars/Mine-FNL/firm-bot?style=social)](https://github.com/Mine-FNL/firm-bot/stargazers)
 
+<p align="center">
+  <img src="docs/assets/marketing/hero.png" alt="firm-bot — local-first RAG for professional services" width="800">
+</p>
+
+<p align="center">
+  <img src="docs/assets/marketing/demo.gif" alt="firm-bot demo — drop a PDF, ask a question, see the citation" width="800">
+</p>
+
 ```
             ┌──────────────────────┐
    PDFs /   │   Ingestion          │
@@ -75,6 +83,10 @@ firm-bot is a thin, hackable Python tool that solves all three.
 | Self-hostable      | ✅ single Python package  | ❌                  | ❌       | ❌                 |
 | Legal/contract UI  | ⚠️ general chat (v0.1)    | ❌                  | ✅       | ✅ specialist      |
 | Cost               | electricity + a laptop    | $$$ per seat        | $$$      | $$$               |
+
+<p align="center">
+  <img src="docs/assets/marketing/comparison.png" alt="Why local-first wins for legal & audit" width="800">
+</p>
 
 ## Quickstart — 60 seconds
 
@@ -449,6 +461,10 @@ python -m eval.compare --fixture eval/cuad_fixture.json --corpus eval/cuad_corpu
 
 Latest run (10 CUAD contracts, 26 questions, Apple M4, all-MiniLM-L6-v2):
 
+<p align="center">
+  <img src="docs/assets/marketing/benchmark.png" alt="CUAD benchmark — firm_bot vs naive vs other baselines" width="800">
+</p>
+
 | Method          | precision@k | keyword_cov | p50    | p95    |
 |-----------------|-------------|-------------|--------|--------|
 | `firm_bot`      | **0.538**   | 0.000       | 11.1ms | 15.5ms |
@@ -464,11 +480,33 @@ the LLM then answers from.
 
 ## Distribution kit
 
-Pre-written launch artifacts are in [`LAUNCH.md`](LAUNCH.md):
+Ready-to-post launch artifacts live in [`MARKETING.md`](MARKETING.md):
 
-- **Show HN post body** — the canonical "Show HN: firm-bot" text
-- **r/LocalLLaMA post body** — community-targeted, more technical
-- **Demo GIF script** — 60-second frame-by-frame plan for a demo video
+- **Show HN post body** — title + body, calibrated for HN's anti-hype culture
+- **Twitter / X launch tweet + 5-tweet thread** — single-launch format
+- **Reddit posts** for r/LocalLLaMA, r/Python, r/legaltech (different angles)
+- **LinkedIn post** — long-form, professional-services audience
+- **Dev.to article outline** — 1200-word technical write-up
+- **Posting cadence** — what to ship when, what NOT to do
+
+The legacy `LAUNCH.md` still has the original Show HN body + r/LocalLLaMA
+drafts and a frame-by-frame demo GIF plan; `MARKETING.md` supersedes it.
+
+## Marketing assets
+
+All rendered with Pillow (no external SVG tool) — regenerable via
+`scripts/marketing/render_*.py`:
+
+| File | Size | Use |
+|------|------|-----|
+| `docs/assets/marketing/hero.png`       | 1600x900  | README top, GitHub OG variant |
+| `docs/assets/marketing/architecture.png` | 1600x1000 | six-stage pipeline explainer   |
+| `docs/assets/marketing/benchmark.png`  | 1600x900  | CUAD precision@k chart         |
+| `docs/assets/marketing/comparison.png` | 1600x1000 | vs Harvey/Spellbook/Glean      |
+| `docs/assets/marketing/why_local.png` | 1600x1000 | "your data, your box" angle    |
+| `docs/assets/marketing/demo.gif`       | 1200x720  | 7s UI walkthrough loop         |
+| `docs/assets/marketing/demo.mp4`       | H.264     | same, higher quality           |
+| `docs/assets/social-preview.png`       | 1280x640  | GitHub repo social preview     |
 
 These are ready to publish. Drop them into the matching channels;
 tweak voice for the audience.

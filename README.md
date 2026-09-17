@@ -4,12 +4,16 @@
 > Drop in your firm's emails, PDFs, contracts → get a chat endpoint that
 > answers with **citations**, **no data leaves your machine**.
 
-[![CI](https://img.shields.io/badge/CI-macOS%20%2B%20ubuntu-blue)](https://github.com/firm-bot/firm-bot/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/Mine-FNL/firm-bot/ci.yml?branch=main&label=CI&logo=github)](https://github.com/Mine-FNL/firm-bot/actions)
+[![Release](https://img.shields.io/github/v/release/Mine-FNL/firm-bot?include_prereleases&sort=semver)](https://github.com/Mine-FNL/firm-bot/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
-[![Coverage 74%](https://img.shields.io/badge/coverage-74%25-brightgreen)](https://github.com/firm-bot/firm-bot)
+[![Coverage 74%](https://img.shields.io/badge/coverage-74%25-brightgreen)](https://github.com/Mine-FNL/firm-bot)
 [![Ollama](https://img.shields.io/badge/llm-Ollama-black)](https://ollama.com)
 [![Chroma](https://img.shields.io/badge/vectors-Chroma-orange)](https://trychroma.com)
+[![Ruff](https://img.shields.io/badge/lint-ruff-orange)](https://github.com/astral-sh/ruff)
+[![mypy strict](https://img.shields.io/badge/types-mypy--strict-blue)](https://mypy.readthedocs.io)
+[![Stars](https://img.shields.io/github/stars/Mine-FNL/firm-bot?style=social)](https://github.com/Mine-FNL/firm-bot/stargazers)
 
 ```
             ┌──────────────────────┐

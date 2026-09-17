@@ -509,7 +509,10 @@ via `scripts/marketing/render_*.py`:
 | `docs/assets/marketing/why_local.png` | 1600x1000  | "your data, your box" angle    |
 | `docs/assets/marketing/demo.gif`       | 1200x720   | 7s UI walkthrough loop         |
 | `docs/assets/marketing/demo.mp4`       | H.264      | same, higher quality           |
-| `docs/assets/marketing/demo-video.mp4` | 1920x1080  | **full 66-second demo video**  |
+| `docs/assets/marketing/demo-video.mp4` | 1920x1080  | **66-second demo video** (UI walkthrough) |
+| `docs/assets/marketing/why-firm-bot.mp4` | 1920x1080 | **43-second explainer** (pain point) |
+| `docs/assets/marketing/what-is-it.mp4` | 1920x1080 | **38-second explainer** (pipeline + chat card) |
+| `docs/assets/marketing/magic-sauce.mp4` | 1920x1080 | **48-second explainer** (chunker + citations + guard) |
 | `docs/assets/social-preview.png`       | 1280x640   | GitHub repo social preview     |
 
 These are ready to publish. Drop them into the matching channels;

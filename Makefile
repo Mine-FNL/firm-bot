@@ -59,6 +59,30 @@ test-cov:  ## run tests with coverage report
 test-load:  ## run the load benchmark (skipped by default in CI)
 	FIRM_BOT_RUN_LOAD_BENCH=1 pytest tests/test_load.py -v
 
+# ---- benchmarks --------------------------------------------------------
+
+# Pure in-memory retrieval benchmark — no Ollama needed. Compares
+# structure-aware chunker vs naive sliding-window over the 30-contract
+# curated corpus and 59 questions in eval/compare_fixture.json.
+bench-compare:  ## retrieval benchmark (firm_bot chunker vs naive), pure in-memory
+	$(PYTHON) -m eval.compare --markdown --out eval/results/compare-latest.json
+
+bench-compare-full:  ## retrieval benchmark with the explicit corpus+fixture paths
+	$(PYTHON) -m eval.compare \
+		--corpus eval/compare_corpus \
+		--fixture eval/compare_fixture.json \
+		--markdown \
+		--out eval/results/compare-latest.json
+
+# End-to-end benchmark — needs a live Ollama. Use --limit N to keep it fast.
+bench-e2e:  ## end-to-end benchmark (needs Ollama running)
+	$(PYTHON) -m eval.eval_e2e --limit 10 --markdown
+
+bench-load:  ## concurrent load benchmark (FIRM_BOT_RUN_LOAD_BENCH=1)
+	FIRM_BOT_RUN_LOAD_BENCH=1 pytest tests/test_load.py -v -s
+
+bench: bench-compare  ## alias for the default benchmark
+
 # ---- lint / typecheck --------------------------------------------------
 
 lint:  ## ruff check + format check on production code

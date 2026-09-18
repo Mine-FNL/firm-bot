@@ -19,17 +19,27 @@ insurance, marketing, DPAs, and LOIs. The matching fixture
 ### Run
 
 ```bash
-python eval/make_compare_corpus.py    # one-time
+# One-shot reproduction:
+make bench-compare
+
+# Or directly:
+python eval/make_compare_corpus.py    # one-time corpus generation
 python -m eval.compare --markdown     # firm_bot vs naive
 FIRM_BOT_BENCH_RERANK=1 python -m eval.compare --markdown  # + rerank column
 ```
 
-### Latest run (Apple M4, all-MiniLM-L6-v2)
+Output: JSON + markdown summary. Saves to `eval/results/compare-latest.json`
+when run via the Makefile. We commit a dated `.snap` copy as evidence.
+
+### Latest run (Apple M4, all-MiniLM-L6-v2, 2026-09-19)
+
+Saved to `eval/results/2026-09-19-compare.{json,md}.snap` for
+reproducibility — the JSON has every per-question number.
 
 | Method                | precision@k | keyword_cov | p50    | p95    |
 |-----------------------|-------------|-------------|--------|--------|
-| `firm_bot`            | **0.627**   | 0.605       | 4.5 ms | 6.5 ms |
-| `naive` (sliding window) | 0.610     | **0.619**   | 4.1 ms | 5.2 ms |
+| `firm_bot`            | **0.627**   | 0.605       | 3.6 ms | 4.9 ms |
+| `naive` (sliding window) | 0.610     | **0.619**   | 3.3 ms | 3.5 ms |
 | `firm_bot + rerank`   | 0.627       | 0.605       | 16 ms  | 96.9 ms |
 
 How to read this:

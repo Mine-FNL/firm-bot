@@ -90,6 +90,8 @@ firm-bot is a thin, hackable Python tool that solves all three.
 
 ## Quickstart — 60 seconds
 
+### A. One-shot (recommended)
+
 ```bash
 # 1. Install — three paths, pick one:
 #    (a) GitHub Pages PEP 503 simple index (stable, recommended)
@@ -98,7 +100,9 @@ pip install --extra-index-url https://mine-fnl.github.io/firm-bot/simple/ firm-b
 pip install https://github.com/Mine-FNL/firm-bot/releases/download/v0.1.1/firm_bot-0.1.0-py3-none-any.whl
 #    (c) PyPI (once Trusted Publisher is registered; not live yet)
 
-# 2. Pull the models you'll use
+# 2. Pull the models you'll use (skip if you have these already)
+ollama pull qwen2.5-coder:1.5b-instruct    # default (~1 GB)
+# or for production-quality answers:
 ollama pull qwen2.5-coder:14b    # answer model (~9 GB)
 ollama pull qwen2.5-coder:7b     # judge model  (~4.7 GB)
 
@@ -114,8 +118,32 @@ firm-bot ingest demo
 # 6. Ask
 firm-bot query demo "What's the cap on liability?"
 
-# 7. Or run the web UI
+# 7. Or run the web UI (auto-pulls the configured model on first boot)
 firm-bot serve --port 7860
+```
+
+### B. Docker Compose (everything in one command)
+
+```bash
+git clone https://github.com/Mine-FNL/firm-bot
+cd firm-bot
+docker compose up -d    # firm-bot + Ollama, auto-pulls qwen2.5-coder:1.5b-instruct on first boot
+# Open http://localhost:7860
+```
+
+Set `FIRM_BOT_LLM_MODEL=qwen2.5-coder:14b` in your shell before
+`docker compose up -d` to use the larger answer model instead.
+
+## Why auto-pull matters
+
+On `firm-bot serve` first boot (or first boot of the Docker stack),
+firm-bot calls Ollama's `POST /api/pull` for the configured
+`llm_model` if it isn't already on disk. This eliminates the
+`ollama pull X` step from the user-facing quickstart — the very
+first `firm-bot serve` Just Works.
+
+Disable with `FIRM_BOT_AUTO_PULL_MODEL=0` if you want to control
+model fetches separately (e.g., on air-gapped networks).
 # open http://127.0.0.1:7860
 ```
 

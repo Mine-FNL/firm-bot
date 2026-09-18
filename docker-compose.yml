@@ -5,8 +5,9 @@
 #
 # Then open http://localhost:7860.
 #
-# Ollama is exposed on 11434 so you can pull models from the host:
-#     ollama pull qwen2.5-coder:14b
+# On first boot, firm-bot auto-pulls `qwen2.5-coder:1.5b-instruct`
+# (~1 GB) into Ollama. Override `FIRM_BOT_LLM_MODEL` to use a larger
+# model — e.g. `qwen2.5-coder:14b` (~9 GB) for production answers.
 #
 # Data is persisted under ./data on the host.
 
@@ -35,6 +36,9 @@ services:
     environment:
       FIRM_BOT_OLLAMA_HOST: http://ollama:11434
       FIRM_BOT_DATA_DIR: /app/data
+      # Small, fast default — auto-pulled on first boot.
+      # Set FIRM_BOT_LLM_MODEL=qwen2.5-coder:14b for production.
+      FIRM_BOT_LLM_MODEL: ${FIRM_BOT_LLM_MODEL:-qwen2.5-coder:1.5b-instruct}
     ports:
       - "7860:7860"
     volumes:

@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import logging
+import os
 import shutil
 import time
 import typing
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
@@ -15,15 +18,40 @@ from pydantic import BaseModel, Field
 from ..chunk import chunk_documents
 from ..config import FirmConfig, RootConfig, is_valid_slug
 from ..ingest.common import IngestStats, dispatch, walk_source_dir
+from ..ollama_setup import ensure_model_pulled
 from ..store import Store
 from .embed_cache import get_embedder
 
 log = logging.getLogger("firm_bot.api")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Startup hook — auto-pull the configured Ollama model if missing.
+
+    Controlled by `FIRM_BOT_AUTO_PULL_MODEL`:
+      - "0" / "false" → skip
+      - anything else (default) → attempt the pull, log warnings on
+        failure but never break startup.
+
+    This is what makes `firm-bot serve` work on first boot without
+    a separate `ollama pull X` step. The pull is best-effort: query
+    path surfaces the real error if the model is still missing.
+    """
+    if os.environ.get("FIRM_BOT_AUTO_PULL_MODEL", "1").lower() not in ("0", "false", "no"):
+        root = _get_root()
+        # Only pull for the default answer model — firm-level overrides
+        # are not auto-pulled (would race against user-driven config).
+        if root.llm_model:
+            ensure_model_pulled(root.ollama_host, root.llm_model)
+    yield
+
+
 app = FastAPI(
     title="firm-bot",
     description="Multi-tenant local-first chatbot builder for professional services firms.",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 

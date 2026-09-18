@@ -1,0 +1,51 @@
+name: bench-compare
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly on Tuesdays at 06:00 UTC. One day after the load
+    # benchmark so a regression in either one is caught close to
+    # the upstream-deps weekly cadence.
+    - cron: "0 6 * * 2"
+  workflow_dispatch:
+
+jobs:
+  retrieval:
+    name: retrieval benchmark + regression check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install firm-bot (dev extras)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Lint gate
+        run: |
+          ruff check firm_bot eval tests
+          mypy firm_bot eval
+      - name: Run retrieval benchmark
+        run: |
+          make bench-compare-full
+      - name: Regression check vs committed snapshot
+        env:
+          BASELINE_PATH: eval/results/2026-09-19-compare.json.snap
+          CURRENT_PATH: eval/results/compare-latest.json
+          REGRESSION_THRESHOLD_PCT: "5.0"
+        run: |
+          python -m eval.compare --check-regression \
+            --baseline "$BASELINE_PATH" \
+            --current "$CURRENT_PATH" \
+            --max-regression-pct "$REGRESSION_THRESHOLD_PCT"
+      - name: Upload retrieval benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retrieval-bench-results
+          path: |
+            eval/results/compare-latest.json
+            eval/results/compare-latest.md
+          if-no-files-found: ignore

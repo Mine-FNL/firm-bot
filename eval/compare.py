@@ -20,6 +20,7 @@ import json
 import logging
 import os
 import statistics
+import sys
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -335,7 +336,30 @@ def main() -> int:
     parser.add_argument("--out", default="eval/compare_results.json")
     parser.add_argument("--markdown", action="store_true")
     parser.add_argument("--k", type=int, default=6)
+    parser.add_argument(
+        "--check-regression",
+        action="store_true",
+        help=(
+            "Read baseline + current JSON reports and exit non-zero if any "
+            "chunker's precision@k regressed by more than --max-regression-pct"
+        ),
+    )
+    parser.add_argument("--baseline", default="", help="path to baseline JSON report")
+    parser.add_argument("--current", default="", help="path to current JSON report")
+    parser.add_argument(
+        "--max-regression-pct",
+        type=float,
+        default=5.0,
+        help="max allowed regression in percentage points (default 5.0)",
+    )
     args = parser.parse_args()
+
+    if args.check_regression:
+        return _check_regression(
+            baseline_path=Path(args.baseline),
+            current_path=Path(args.current),
+            max_regression_pct=args.max_regression_pct,
+        )
 
     logging.basicConfig(level=logging.WARNING)
 
@@ -369,6 +393,69 @@ def main() -> int:
             f"p50={report.p50_retrieval_ms[c]:.1f}ms  "
             f"p95={report.p95_retrieval_ms[c]:.1f}ms"
         )
+    return 0
+
+
+def _check_regression(
+    baseline_path: Path,
+    current_path: Path,
+    max_regression_pct: float,
+) -> int:
+    """Compare two benchmark JSON reports. Exit 0 on no regression, 1 on regression.
+
+    Reads each chunker's `mean_precision_at_k` from both files and flags
+    any chunker whose current value is more than `max_regression_pct`
+    percentage points below the baseline.
+    """
+    if not baseline_path.exists():
+        print(f"baseline not found: {baseline_path}", file=sys.stderr)
+        return 2
+    if not current_path.exists():
+        print(f"current report not found: {current_path}", file=sys.stderr)
+        return 2
+    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    current = json.loads(current_path.read_text(encoding="utf-8"))
+    b_map: dict[str, float] = baseline.get("mean_precision_at_k", {})
+    c_map: dict[str, float] = current.get("mean_precision_at_k", {})
+    if not b_map:
+        print(f"baseline has no mean_precision_at_k: {baseline_path}", file=sys.stderr)
+        return 2
+    if not c_map:
+        print(f"current report has no mean_precision_at_k: {current_path}", file=sys.stderr)
+        return 2
+    regressions: list[str] = []
+    lines = [
+        "Regression check vs baseline:",
+        f"  baseline: {baseline_path}",
+        f"  current:  {current_path}",
+        f"  threshold: {max_regression_pct:.1f} pp",
+        "",
+        f"  {'chunker':<32} {'baseline':>10} {'current':>10} {'Δ (pp)':>10}",
+    ]
+    for chunker in sorted(set(b_map) | set(c_map)):
+        b = b_map.get(chunker, 0.0)
+        c = c_map.get(chunker, 0.0)
+        delta_pp = (b - c) * 100.0  # percentage points; positive = regression
+        flag = "  ⚠" if delta_pp > max_regression_pct else ""
+        lines.append(
+            f"  {chunker:<32} {b*100:>9.2f}% {c*100:>9.2f}% {delta_pp:>+9.2f}{flag}"
+        )
+        if delta_pp > max_regression_pct:
+            regressions.append(
+                f"{chunker}: baseline {b:.3f} → current {c:.3f} ({delta_pp:+.1f} pp)"
+            )
+    print("\n".join(lines))
+    if regressions:
+        print("", file=sys.stderr)
+        print(
+            f"REGRESSION DETECTED — {len(regressions)} chunker(s) regressed "
+            f"by more than {max_regression_pct:.1f} percentage points:",
+            file=sys.stderr,
+        )
+        for r in regressions:
+            print(f"  - {r}", file=sys.stderr)
+        return 1
+    print("\nNo regression. ✓")
     return 0
 
 

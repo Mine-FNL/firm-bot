@@ -852,7 +852,10 @@ For further information:
 
 - **Repository**: https://github.com/Mine-FNL/firm-bot
 - **Documentation**: https://mine-fnl.github.io/firm-bot
-- **PyPI**: `pip install firm-bot`
+- **Install** — three paths:
+  - `pip install --extra-index-url https://mine-fnl.github.io/firm-bot/simple/ firm-bot` (PEP 503 simple index on GitHub Pages — stable, recommended)
+  - `pip install https://github.com/Mine-FNL/firm-bot/releases/download/v0.1.1/firm_bot-0.1.0-py3-none-any.whl` (direct URL, one-off pin)
+  - PyPI once Trusted Publisher is registered
 - **Issue tracker**: https://github.com/Mine-FNL/firm-bot/issues
 - **Discussions**: https://github.com/Mine-FNL/firm-bot/discussions
 

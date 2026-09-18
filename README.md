@@ -91,8 +91,12 @@ firm-bot is a thin, hackable Python tool that solves all three.
 ## Quickstart — 60 seconds
 
 ```bash
-# 1. Install
-pip install firm-bot
+# 1. Install — three paths, pick one:
+#    (a) GitHub Pages PEP 503 simple index (stable, recommended)
+pip install --extra-index-url https://mine-fnl.github.io/firm-bot/simple/ firm-bot
+#    (b) Direct GitHub Releases URL (one-off pin)
+pip install https://github.com/Mine-FNL/firm-bot/releases/download/v0.1.1/firm_bot-0.1.0-py3-none-any.whl
+#    (c) PyPI (once Trusted Publisher is registered; not live yet)
 
 # 2. Pull the models you'll use
 ollama pull qwen2.5-coder:14b    # answer model (~9 GB)

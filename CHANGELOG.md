@@ -61,9 +61,14 @@ a new release so the GitHub release index shows the refreshed docs.
   newline; only the Send button submits the form).
 
 ### Distribution
-- New install URL:
+- New GitHub Releases install URL:
   `pip install https://github.com/Mine-FNL/firm-bot/releases/download/v0.1.1/firm_bot-0.1.0-py3-none-any.whl`
+- New GitHub Pages PEP 503 simple index (stable, recommended — no signed-URL freshness dependency):
+  `pip install --extra-index-url https://mine-fnl.github.io/firm-bot/simple/ firm-bot`
+  - Served from the `gh-pages` branch; SHA-256 hashes pinned in the index; pip refuses mismatched downloads.
+  - Verified end-to-end: `pip index versions firm-bot --extra-index-url https://mine-fnl.github.io/firm-bot/simple/` returns `0.1.0`; `pip download --no-deps` retrieves the wheel; SHA-256 matches the index entry exactly.
 - v0.1.1 GitHub release: https://github.com/Mine-FNL/firm-bot/releases/tag/v0.1.1
+- GitHub Pages site: https://mine-fnl.github.io/firm-bot/
 
 ## [0.1.0] — 2026-09-17
 

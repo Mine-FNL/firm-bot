@@ -106,20 +106,22 @@ ollama pull qwen2.5-coder:1.5b-instruct    # default (~1 GB)
 ollama pull qwen2.5-coder:14b    # answer model (~9 GB)
 ollama pull qwen2.5-coder:7b     # judge model  (~4.7 GB)
 
-# 3. Create a firm
-firm-bot firm create --slug demo --name "Demo LLP"
+# 3. Bootstrap the bundled sample firm (creates "demo" + ingests 2 sample contracts)
+firm-bot demo init
 
-# 4. Drop a contract into the firm's source/ directory
-cp my-contract.pdf ./data/firms/demo/source/
-
-# 5. Ingest (extract → chunk → embed → index)
-firm-bot ingest demo
-
-# 6. Ask
-firm-bot query demo "What's the cap on liability?"
-
-# 7. Or run the web UI (auto-pulls the configured model on first boot)
+# 4. Run the web UI (auto-pulls the configured model on first boot)
 firm-bot serve --port 7860
+# Open http://localhost:7860 — the Demo LLP firm is pre-loaded.
+```
+
+To use your own contracts instead of the samples:
+
+```bash
+firm-bot firm create --slug myfirm --name "My Firm LLP"
+mkdir -p ./data/firms/myfirm/source
+cp my-contract.pdf ./data/firms/myfirm/source/
+firm-bot ingest myfirm
+firm-bot query myfirm "What's the cap on liability?"
 ```
 
 ### B. Docker Compose (everything in one command)
@@ -127,7 +129,8 @@ firm-bot serve --port 7860
 ```bash
 git clone https://github.com/Mine-FNL/firm-bot
 cd firm-bot
-docker compose up -d    # firm-bot + Ollama, auto-pulls qwen2.5-coder:1.5b-instruct on first boot
+firm-bot demo init --reset   # one-time: copies bundled samples into ./data
+docker compose up -d         # firm-bot + Ollama, auto-pulls qwen2.5-coder:1.5b-instruct on first boot
 # Open http://localhost:7860
 ```
 

@@ -28,7 +28,8 @@ from . import __version__
 from .config import FirmConfig, RootConfig, is_valid_slug
 
 
-def main(argv: list[str] | None = None) -> int:
+def _build_parser() -> argparse.ArgumentParser:
+    """Construct the argparse tree for the firm-bot CLI."""
     parser = argparse.ArgumentParser(
         prog="firm-bot",
         description="Multi-tenant local-first chatbot builder.",
@@ -88,6 +89,34 @@ def main(argv: list[str] | None = None) -> int:
     ps.add_argument("--port", type=int, default=7860)
     ps.add_argument("--reload", action="store_true")
 
+    # demo — bundle sample firm setup
+    pd = sub.add_parser(
+        "demo",
+        help="bundle a sample firm so `firm-bot serve` works out of the box",
+    )
+    pdi = pd.add_subparsers(dest="demo_cmd", required=True)
+    pd_init = pdi.add_parser(
+        "init",
+        help="create the demo firm from bundled samples and ingest it (idempotent)",
+    )
+    pd_init.add_argument("--slug", default="demo", help="firm slug (default: demo)")
+    pd_init.add_argument("--name", default="Demo LLP", help="firm display name")
+    pd_init.add_argument(
+        "--llm-model",
+        default=None,
+        help="override the default LLM model for this demo firm",
+    )
+    pd_init.add_argument(
+        "--reset",
+        action="store_true",
+        help="wipe an existing demo firm before re-creating (destructive)",
+    )
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = _build_parser()
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
     root = _load_root(args.data_dir)
@@ -107,6 +136,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_watch(args, root)
     if args.cmd == "serve":
         return _cmd_serve(args, root)
+    if args.cmd == "demo":
+        return _cmd_demo(args, root)
     parser.error(f"unknown command: {args.cmd}")
     return 2
 
@@ -182,12 +213,27 @@ def _cmd_firm(args: argparse.Namespace, root: RootConfig) -> int:
 
 def _cmd_ingest(args: argparse.Namespace, root: RootConfig) -> int:
     from .api.embed_cache import get_embedder
-    from .chunk import chunk_documents
-    from .ingest.common import IngestStats, dispatch, walk_source_dir
     from .store import Store
 
     store = Store.open(root, args.slug)
-    embedder = get_embedder(root)
+    _ingest_source_dir(root, store, get_embedder(root))
+    return 0
+
+
+def _ingest_source_dir(
+    root: RootConfig,
+    store: Any,
+    embedder: Any,
+) -> int:
+    """Shared ingest loop used by `firm-bot ingest` and `firm-bot demo init`.
+
+    Walks `store.source_dir`, extracts chunks, embeds them, upserts into
+    Chroma, and persists BM25. Prints a summary JSON to stdout. Returns
+    the number of chunks indexed.
+    """
+    from .chunk import chunk_documents
+    from .ingest.common import IngestStats, dispatch, walk_source_dir
+
     all_chunks: list[Any] = []
     stats = IngestStats()
     for src in walk_source_dir(store.source_dir):
@@ -208,7 +254,7 @@ def _cmd_ingest(args: argparse.Namespace, root: RootConfig) -> int:
     store.upsert_chunks(all_chunks, embeddings)
     store.save_bm25(all_chunks)
     print(json.dumps({"stats": stats.as_dict(), "chunks_indexed": len(all_chunks)}, indent=2))
-    return 0
+    return len(all_chunks)
 
 
 def _cmd_query(args: argparse.Namespace, root: RootConfig) -> int:
@@ -358,6 +404,71 @@ def _cmd_serve(args: argparse.Namespace, root: RootConfig) -> int:
         reload=args.reload,
         log_level="info",
     )
+    return 0
+
+
+def _cmd_demo(args: argparse.Namespace, root: RootConfig) -> int:
+    """`firm-bot demo init` — one-shot bootstrap of the bundled sample firm.
+
+    Idempotent: re-running over an existing demo firm is a no-op
+    unless --reset is passed (which wipes the firm first).
+    """
+    if args.demo_cmd != "init":
+        return 2  # argparse would have caught unknown subcommands
+
+    samples_root = Path(__file__).resolve().parent.parent / "examples" / "sample_data"
+    if not samples_root.is_dir():
+        print(
+            f"error: bundled sample data not found at {samples_root}",
+            file=sys.stderr,
+        )
+        return 1
+
+    firm_dir = Path(root.data_dir) / "firms" / args.slug
+
+    # Optional destructive reset
+    if args.reset and firm_dir.exists():
+        import shutil
+        shutil.rmtree(firm_dir)
+        print(f"removed existing firm: {firm_dir}")
+
+    # Create firm if missing
+    firm_cfg_path = firm_dir / "config.yaml"
+    if not firm_cfg_path.exists():
+        from .config import FirmConfig
+        cfg = FirmConfig(slug=args.slug, name=args.name)
+        if args.llm_model:
+            cfg.llm_model = args.llm_model
+        cfg.save(firm_dir)
+        print(f"created firm {args.slug!r} ({args.name})")
+    else:
+        print(f"firm {args.slug!r} already exists")
+
+    # Copy bundled samples into the firm's source/ directory
+    from .store import Store
+    store = Store.open(root, args.slug)
+    copied: list[str] = []
+    for src in sorted(samples_root.glob("*.pdf")):
+        target_path = store.source_dir / src.name
+        if not target_path.exists():
+            target_path.write_bytes(src.read_bytes())
+            copied.append(src.name)
+    if copied:
+        print(f"copied {len(copied)} sample(s): {', '.join(copied)}")
+    else:
+        print("source/ already has the bundled samples")
+
+    # Reuse the same ingest pipeline as `firm-bot ingest`
+    from .api.embed_cache import get_embedder
+    indexed = _ingest_source_dir(root, store, get_embedder(root))
+
+    print(json.dumps(
+        {
+            "chunks_indexed": indexed,
+            "ready_for": f"firm-bot query {args.slug} \"What's the cap on liability?\"",
+        },
+        indent=2,
+    ))
     return 0
 
 

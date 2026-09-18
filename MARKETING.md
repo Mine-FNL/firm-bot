@@ -41,6 +41,7 @@ All in `docs/assets/marketing/`:
 | `demo.gif`            | 1200x720 — 7-second UI walkthrough loop       | 175 KB |
 | `demo.mp4`            | H.264 of the above                            | 84 KB  |
 | `demo-video.mp4`      | 1920x1080 — 66s demo video (silent)            | 1.0 MB |
+| `real-demo-recording.mp4` | 1280x720 — real product footage via Playwright | 438 KB |
 | `why-firm-bot.mp4`    | 1920x1080 — 51s explainer + audio narration   | 1.9 MB |
 | `what-is-it.mp4`      | 1920x1080 — 44s explainer + audio narration   | 1.5 MB |
 | `magic-sauce.mp4`     | 1920x1080 — 55s explainer + audio narration   | 1.7 MB |

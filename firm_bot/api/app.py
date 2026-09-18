@@ -81,6 +81,7 @@ def _register_middleware() -> None:
     # Security: rate limit + body size + CORS. Reads limits from RootConfig.
     try:
         from ..security import SecurityMiddleware
+        from ..security.api_key import APIKeyAuthMiddleware
         from ..security.rate_limit import RateLimiter
 
         root = _get_root()
@@ -94,6 +95,19 @@ def _register_middleware() -> None:
             max_body_bytes=root.max_upload_bytes,
             cors_allow_origins=root.cors_allow_origins,
         )
+        # API key auth — opt-in. Only wired when require_api_key is
+        # true AND at least one key is configured. Health / metrics /
+        # UI are exempt regardless.
+        if root.require_api_key and root.api_keys:
+            app.add_middleware(
+                APIKeyAuthMiddleware,
+                valid_keys=root.api_keys,
+                enabled=True,
+            )
+            log.info(
+                "api key auth enabled (configured=%d keys)",
+                len(root.api_keys),
+            )
     except Exception as e:  # pragma: no cover - defensive
         log.warning("security middleware not wired: %s", e)
 

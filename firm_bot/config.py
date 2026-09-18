@@ -72,6 +72,13 @@ class RootConfig:
     # CORS allow-list. Empty list = no CORS headers emitted (fail closed).
     # Pass ["*"] to allow any origin (development only).
     cors_allow_origins: list[str] = field(default_factory=list)
+    # ---- API key auth (opt-in) ----
+    # Set ``require_api_key=True`` to gate every ``/v1/*`` endpoint on
+    # a valid API key. Health/metrics/UI are exempt. For real per-user
+    # auth, deploy behind oauth2-proxy or similar — this module is
+    # only a single shared-secret gate.
+    require_api_key: bool = False
+    api_keys: list[str] = field(default_factory=list)
     log_level: str = "INFO"
 
     # ---- factories ----
@@ -126,6 +133,7 @@ class RootConfig:
         # List-type env overrides. Comma-separated: ORIGIN=a,b,c → ['a','b','c'].
         csv_key_map = {
             "cors_allow_origins": "FIRM_BOT_CORS_ALLOW_ORIGINS",
+            "api_keys": "FIRM_BOT_API_KEYS",
         }
         for field_name, env_key in csv_key_map.items():
             val = os.environ.get(env_key)

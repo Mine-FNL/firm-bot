@@ -168,6 +168,40 @@ make all        # lint + typecheck + test (pre-push gate)
 The `docker-smoke` CI workflow runs `make docker`-equivalent
 (`docker compose up -d`) on every push to main and verifies
 `/healthz` + `/v1/firms` are reachable.
+
+## Optional: API key authentication
+
+firm-bot is single-tenant by default — anyone with network access to
+the HTTP port can act as any operator. To gate the API on a shared
+secret, set in `data/config.yaml` (or via env vars):
+
+```yaml
+require_api_key: true
+api_keys:
+  - "your-long-random-string-1"
+  - "your-long-random-string-2"
+```
+
+Or via env:
+
+```
+FIRM_BOT_REQUIRE_API_KEY=1
+FIRM_BOT_API_KEYS=your-long-random-string-1,your-long-random-string-2
+```
+
+Clients then send one of:
+
+```
+Authorization: Bearer <key>
+X-API-Key: <key>
+```
+
+`/healthz`, `/metrics`, and the HTML UI (`/`) are exempt so load
+balancers and Prometheus can still scrape. For per-user authentication
+(login, sessions, OAuth/OIDC), deploy behind `oauth2-proxy` or a
+similar authenticating reverse proxy — the API key middleware is
+deliberately only a single shared-secret gate. See `SECURITY.md` for
+the threat model.
 # open http://127.0.0.1:7860
 ```
 

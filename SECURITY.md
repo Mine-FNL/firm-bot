@@ -85,14 +85,19 @@ firm-bot-specific scenarios the codebase has been hardened against.
 
 ### E — Elevation of privilege
 
-- **No authentication.** firm-bot has no auth; any caller that can
-  reach the HTTP port can act as any operator. *Status:* **known and
-  explicit** — see "Out of scope" below.
+- **No authentication by default.** firm-bot ships with an optional
+  API key middleware (`require_api_key: true` in config.yaml +
+  `api_keys: [...]`). When enabled, every `/v1/*` endpoint requires
+  `Authorization: Bearer <key>` or `X-API-Key: <key>`. Health,
+  metrics, and the HTML UI are exempt. When disabled, any caller
+  that can reach the HTTP port can act as any operator. *Status:*
+  **opt-in shared-secret gate; per-user auth still requires a
+  reverse proxy** (oauth2-proxy, Pomerium, Cloudflare Access).
 - **Multi-tenant cross-read.** A request to `/v1/firms/{slug}/query`
   for a slug it does not own should still be denied. *Mitigation:*
   slug is validated; v0.1 has no per-user authorisation layer, so
-  *knowing a slug* is sufficient. Multi-tenant isolation is a roadmap
-  item, not v0.1.
+  *knowing a slug + an API key* is sufficient. Multi-tenant
+  isolation is a roadmap item, not v0.1.
 
 ## Controls implemented in this codebase
 
@@ -105,6 +110,13 @@ firm-bot-specific scenarios the codebase has been hardened against.
 - **CORS allow-list.** Empty default = no CORS headers; preflight and
   response-echo paths only emit `Access-Control-*` when the request
   `Origin` is in `cors_allow_origins`. `firm_bot/security/middleware.py:198`.
+- **API key authentication (opt-in).** Single shared-secret gate
+  applied to `/v1/*` when `require_api_key: true` AND at least one
+  key is configured. Health/metrics/UI exempt. Constant-time key
+  comparison; SHA-256 first-12 used in log lines. Keys are plaintext
+  in config (boundary is "who can read config.yaml"). For real
+  per-user auth, deploy behind oauth2-proxy / Pomerium / Cloudflare
+  Access. `firm_bot/security/api_key.py`.
 - **Log redaction.** Filter strips bearer tokens, `api_key=`,
   `token=`, emails, and `_KEY`/`_SECRET`/`_TOKEN` env-var values.
   `firm_bot/security/redact.py`.
@@ -125,11 +137,12 @@ firm-bot-specific scenarios the codebase has been hardened against.
 
 ## Out of scope for v0.1
 
-- **No authentication.** Treat firm-bot as an internal service. Do not
-  expose to the public internet without putting an authenticating
-  reverse proxy (Caddy, nginx, oauth2-proxy) in front.
-- **No authorisation.** All callers that reach the API can act as any
-  operator on any firm. Tenant isolation is filesystem-level.
+- **Per-user authentication.** The optional API key middleware is a
+  single shared-secret gate — it doesn't know which user is calling.
+  Per-user auth (login, sessions, OAuth/OIDC) is out of scope; deploy
+  behind an authenticating reverse proxy for that.
+- **Per-user authorisation.** All callers with a valid API key can
+  act as any operator on any firm. Tenant isolation is filesystem-level.
 - **No encryption at rest.** Chunks and indexes are plain files on disk.
   If the host is compromised, the documents are readable. Run on an
   encrypted volume (FileVault, LUKS) for at-rest confidentiality.

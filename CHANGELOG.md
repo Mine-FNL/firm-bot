@@ -6,81 +6,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-- **Observability** (`firm_bot/observability/`). `/metrics` Prometheus
-  text exposition endpoint, per-firm counters, end-to-end latency
-  histogram, per-stage latency histogram, structured JSON logs via
-  stdlib `dictConfig`, request id propagation via `X-Request-ID` header
-  and `request.state.request_id`. Optional — install via
-  `pip install firm-bot[observability]`.
-- **Security hardening** (`firm_bot/security/`). Per-IP token-bucket
-  rate limit (10 RPS / 20 burst by default), request body size cap
-  (413 before memory read), CORS allow-list (fail-closed default),
-  log-redaction `logging.Filter` for credentials, full STRIDE threat
-  model in `SECURITY.md`.
-- **RAGAS-style quality evaluation** (`eval/ragas.py`). Four
-  metrics — faithfulness, answer_relevancy, context_precision,
-  context_recall — computed over the (question, contexts, answer)
-  triple without requiring the heavy `ragas` package. Aggregated into
-  the end-to-end benchmark report when ground-truth is present.
-- **Concurrent load benchmark** (`eval/load.py`). Fires N concurrent
-  queries against the in-process ASGI app and reports p50/p95/p99
-  latency, throughput, and error rate. Runs in CI on push to main via
-  `.github/workflows/bench.yml`.
-- **Structured /query response**. `confidence` ([0, 1] heuristic from
-  citation presence, guard verdict, retrieval saturation) and
-  `latency_ms` (wall-clock) added to every query response.
+(nothing yet — current development happens on `main`)
 
-### Changed
-- `RootConfig` gained `rate_limit_rps`, `rate_limit_burst`,
-  `max_upload_bytes`, `cors_allow_origins`.
-- Test suite expanded from 56 → 130 tests (129 unit + 1 opt-in load smoke).
-- Coverage 70.81% → 74.47%.
+## [0.1.1] — 2026-09-18
 
-## [0.1.1] — 2026-09-17
-
-## [0.1.1] — 2026-09-17
-
-Post-release improvements that land cleanly on top of v0.1.
+Documentation and asset refresh. No Python package changes; the
+wheel and sdist on this release are byte-identical to v0.1.0. Cut as
+a new release so the GitHub release index shows the refreshed docs.
 
 ### Added
-- **Cross-encoder reranker** (`firm_bot/retrieve/rerank.py`). Opt-in via
-  `reranker_model` in `data/config.yaml`. Default model
-  `cross-encoder/ms-marco-MiniLM-L-6-v2` (~100 MB). ~30 ms per query.
-- **PII redaction** (`firm_bot/redact.py`). Regex-based at ingest time,
-  categories: SSN, EIN, email, phone, credit card (Luhn-validated),
-  IBAN, IPv4. Configurable per-firm via `redact_categories`.
-- **Incremental indexing**. Ingest tracks per-file SHA-256 hashes;
-  re-running `firm-bot ingest` only re-processes changed files.
-  Force-reindex with `POST /v1/firms/{slug}/ingest?force=true`.
-- **Real benchmark** (`eval/compare.py` + `eval/make_compare_corpus.py`).
-  Compares structure-aware vs naive chunking on a curated 7-doc
-  contract corpus (20 questions). Outputs JSON + Markdown tables.
-- **Chunker improvement**: standalone Title-Case headings like
-  "Term", "Governing Law", "Permitted Disclosures" are now recognised
-  as section markers. Closes the gap with naive chunkers on contracts
-  that don't prefix sections with "Article" or "Section".
+- **`WHITEPAPER.md`** (~5,300 words / 929 lines). Formal technical
+  whitepaper for sales calls, partner reviews, conference
+  proceedings, formal RFP responses. Covers the compliance gap
+  (privilege, GDPR/HIPAA, air-gap, protective orders), STRIDE threat
+  model, six-stage architecture, design rationale, benchmarks
+  (CUAD/RAGAS/load), honest limitations, roadmap, three appendices.
+- **`ARTICLE_DEVTO.md`** (~2,000 words). Full Dev.to article
+  replacing the prior outline. Real code from `firm_bot/chunk.py`
+  and `firm_bot/answer/prompt.py`. Honest limitations section.
+- **`ARTICLE_BLOG.md`** (~2,200 words). Engineering deep-dive for
+  Medium / Substack / Hashnode. Four real incident post-mortems
+  (OCR rotation, regex cross-doc collisions, Chroma slug validation,
+  RFC 2047 EML corner).
+- **`TWEETS.md`** (3 threads × 7 tweets = 21 tweets, all ≤280 chars).
+  Structure-aware chunker thread, STRIDE threat model thread,
+  benchmarks + honest limitations thread.
+- **`PRODUCT_HUNT.md`** (~1,300 words). Tagline (54 chars), short
+  description (242 chars), long description, maker's first-comment +
+  launch-day comment, 4 themes to hunt for in launch-day replies.
+- **`INDIE_HACKERS.md`** (~820 words). First-person launch post with
+  specific origin story, 4 honest hard parts, 3 feedback questions,
+  transparent revenue position, tech stack with reasoning.
+- **`MARKETING.md`** updated with a long-form artifacts index at
+  the top, an expanded 9-channel list, and a fixed explainer voice
+  reference (Alex → Samantha with `[[slnc N]]` prosody pauses).
+- **`real-demo-recording.mp4`** (438 KB, 14.7s, 1280×720 H.264).
+  Playwright capture of the actual UI: user question, streaming
+  answer with `[Article 4.2]` citation marker, 6 retrieved source
+  chunks with scores. Replaces the synthetic demo GIF.
+- **Three explainer videos with Samantha voice + prosody pauses**
+  (`why-firm-bot.mp4`, `what-is-it.mp4`, `magic-sauce.mp4`).
+  Replaced the v2 Alex voice with Samantha (US English female) at
+  175 wpm with `[[slnc N]]` prosody pauses between sentences. Same
+  1920×1080 / 30fps / H.264 slow / crf 18 video quality.
 
 ### Changed
-- `IngestStats` now includes `files_skipped` (incremental indexing).
-- `RootConfig` gained `reranker_model`, `rerank_top_k`,
-  `incremental_indexing`.
+- **`scripts/marketing/render_explainers_v3.py`** (new). The
+  Samantha-voice + prosody-pauses renderer. Replaces
+  `render_explainers_v2.py` (kept for reference).
+- **`scripts/marketing/record_real_ui.py`** (new). Real-screen
+  recorder using Playwright. Send-button click fix:
+  `page.locator("#send-btn").click()` instead of
+  `chat_input.press("Enter")` (the textarea's Enter only inserts a
+  newline; only the Send button submits the form).
+
+### Distribution
+- New install URL:
+  `pip install https://github.com/Mine-FNL/firm-bot/releases/download/v0.1.1/firm_bot-0.1.0-py3-none-any.whl`
+- v0.1.1 GitHub release: https://github.com/Mine-FNL/firm-bot/releases/tag/v0.1.1
 
 ## [0.1.0] — 2026-09-17
 
-Initial public release. The product surface is complete end-to-end on
-synthetic contracts and ready for pilot customers.
+Initial public release. Multi-tenant local-first RAG chatbot builder
+for professional services firms (legal, audit, consultancy) with
+citation-required answers.
 
-### Added
+### Added — product surface
 - Multi-tenant storage: per-firm Chroma collection + BM25 pickle,
   isolated at the filesystem level.
 - PDF ingestion with Tesseract OCR fallback for scanned pages.
 - EML / mbox ingestion; preserves sender, recipients, subject, date,
   message-id for citation.
 - DOCX ingestion; preserves heading structure for citation.
-- Structure-aware chunker: recognises Article / Section / Exhibit
-  / ALL-CAPS headings; sections are kept distinct under the merge
-  step so two short articles do not collapse.
+- Structure-aware chunker: recognises Article / Section / Exhibit /
+  Title Case / ALL-CAPS headings; sections are kept distinct under
+  the merge step so two short articles do not collapse.
 - Hybrid retrieval: BM25 + dense via Reciprocal Rank Fusion
   (k_rrf=60), weights configurable.
 - Citation-required prompts: every claim must carry a bracketed
@@ -97,9 +97,63 @@ synthetic contracts and ready for pilot customers.
 - Default LLM `qwen2.5-coder:14b`; judge `qwen2.5-coder:7b`; both
   overrideable per-firm.
 
+### Added — observability (`firm_bot/observability/`)
+- `/metrics` Prometheus text exposition endpoint.
+- Per-firm counters, end-to-end latency histogram, per-stage
+  latency histogram.
+- Structured JSON logs via stdlib `dictConfig`.
+- Request-id propagation via `X-Request-ID` header and
+  `request.state.request_id`.
+- Optional — install via `pip install firm-bot[observability]`.
+
+### Added — security hardening (`firm_bot/security/`)
+- Per-IP token-bucket rate limit (10 RPS / 20 burst by default).
+- Request body size cap (413 before memory read).
+- CORS allow-list (fail-closed default).
+- Log-redaction `logging.Filter` for credentials.
+- Full STRIDE threat model in `SECURITY.md`.
+
+### Added — evaluation
+- **RAGAS-style metrics** (`eval/ragas.py`): four metrics —
+  faithfulness, answer_relevancy, context_precision,
+  context_recall — computed over the (question, contexts, answer)
+  triple without requiring the heavy `ragas` package.
+- **Concurrent load benchmark** (`eval/load.py`): fires N concurrent
+  queries against the in-process ASGI app and reports p50/p95/p99
+  latency, throughput, and error rate.
+- **Real benchmark** (`eval/compare.py` + `eval/make_compare_corpus.py`):
+  compares structure-aware vs naive chunking on a curated contract
+  corpus. Outputs JSON + Markdown tables.
+- Runs in CI on push to main via `.github/workflows/bench.yml`.
+
+### Added — retrieval improvements
+- **Cross-encoder reranker** (`firm_bot/retrieve/rerank.py`).
+  Opt-in via `reranker_model` in `data/config.yaml`. Default model
+  `cross-encoder/ms-marco-MiniLM-L-6-v2` (~100 MB). ~30 ms per query.
+- **PII redaction** (`firm_bot/redact.py`). Regex-based at ingest
+  time, categories: SSN, EIN, email, phone, credit card
+  (Luhn-validated), IBAN, IPv4. Configurable per-firm via
+  `redact_categories`.
+- **Incremental indexing**. Ingest tracks per-file SHA-256 hashes;
+  re-running `firm-bot ingest` only re-processes changed files.
+  Force-reindex with `POST /v1/firms/{slug}/ingest?force=true`.
+
+### Added — API
+- **Structured /query response**. `confidence` ([0, 1] heuristic
+  from citation presence, guard verdict, retrieval saturation) and
+  `latency_ms` (wall-clock) added to every query response.
+
+### Changed
+- `RootConfig` gained `rate_limit_rps`, `rate_limit_burst`,
+  `max_upload_bytes`, `cors_allow_origins`, `reranker_model`,
+  `rerank_top_k`, `incremental_indexing`.
+- `IngestStats` now includes `files_skipped` (incremental indexing).
+- Test suite expanded to 129 unit tests + 1 opt-in load smoke (130
+  total under `FIRM_BOT_RUN_LOAD_BENCH=1`).
+- Coverage 74.47% (CI-enforced floor).
+
 ### Known limitations
 - No auth (closed deployment only).
-- No cross-encoder reranker (RRF only).
 - BM25 is rebuilt on every ingest (fine for firms with <100k chunks).
 - OCR is capped at 25 pages per file by default
   (`FIRM_BOT_OCR_PAGES` to override).
@@ -107,3 +161,10 @@ synthetic contracts and ready for pilot customers.
 - Judge prompt assumes English-language contracts (the multilingual
   path is the same but the judge may not flag issues in non-English
   sources reliably).
+- Prompt injection via corpus content is not defended (open
+  problem; mitigation is application-layer).
+- Chunker is validated on legal texts only; mixed corpuses
+  (emails + contracts) need a hybrid pass.
+- Benchmark coverage is the CUAD subset, RAGAS subset, and the
+  custom load benchmark — not general legal Q&A, not adversarial
+  inputs, not non-English traditions.

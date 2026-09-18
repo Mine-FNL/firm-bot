@@ -147,6 +147,27 @@ first `firm-bot serve` Just Works.
 
 Disable with `FIRM_BOT_AUTO_PULL_MODEL=0` if you want to control
 model fetches separately (e.g., on air-gapped networks).
+
+## Quick commands (Makefile)
+
+A `Makefile` ships with the project for the common workflows:
+
+```bash
+make help       # list every target
+make install    # editable install (dev extras)
+make demo       # bootstrap the sample firm
+make dev        # install + demo + serve on :7860
+make test       # pytest -q
+make lint       # ruff check + format check
+make typecheck  # mypy --strict
+make docker     # docker compose up -d (full stack)
+make build      # python -m build --sdist --wheel
+make all        # lint + typecheck + test (pre-push gate)
+```
+
+The `docker-smoke` CI workflow runs `make docker`-equivalent
+(`docker compose up -d`) on every push to main and verifies
+`/healthz` + `/v1/firms` are reachable.
 # open http://127.0.0.1:7860
 ```
 

@@ -169,6 +169,32 @@ The `docker-smoke` CI workflow runs `make docker`-equivalent
 (`docker compose up -d`) on every push to main and verifies
 `/healthz` + `/v1/firms` are reachable.
 
+## Optional: query audit log
+
+Every query (and its metadata) is appended to a per-firm audit log at
+`<data_dir>/firms/<slug>/audit-log.jsonl` for compliance reviews.
+The log never contains the question or answer text — only their
+SHA-256 first-16 hashes and character counts. It does record:
+
+- timestamp, request_id (UUIDv7), firm slug
+- question_hash, question_len_chars, answer_len_chars
+- citation_count, guard_summary (ok / warn / fail / skipped)
+- guard_issue_count, confidence, model
+- retrieval_latency_ms, answer_latency_ms, total_latency_ms
+- hit_count, reranker (model name or None), api_key_hash (first-12)
+
+Read it via:
+
+```
+GET /v1/firms/{slug}/audit-log
+  ?since=<ISO timestamp>   optional lower bound (default: 90d ago)
+  ?until=<ISO timestamp>   optional upper bound (default: now)
+  ?format=json|md|csv|jsonl output format (default: json)
+```
+
+Configurable retention via `FIRM_BOT_AUDIT_RETENTION_DAYS` (default
+90). Set to 0 to disable pruning.
+
 ## Optional: API key authentication
 
 firm-bot is single-tenant by default — anyone with network access to

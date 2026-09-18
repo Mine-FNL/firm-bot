@@ -79,6 +79,16 @@ class RootConfig:
     # only a single shared-secret gate.
     require_api_key: bool = False
     api_keys: list[str] = field(default_factory=list)
+    # ---- audit log ----
+    # Retention window for the per-firm query audit log. Records older
+    # than this are pruned on read. Set to 0 to disable pruning
+    # (records retained indefinitely). Compliance reviews typically
+    # ask for 90 days; the WHITEPAPER recommends the same.
+    audit_retention_days: int = 90
+    # Path inside the firm directory for the audit log file.
+    # Default ``audit-log.jsonl``; change only if you have a strong
+    # reason (custom SIEM ingest, etc).
+    audit_log_filename: str = "audit-log.jsonl"
     log_level: str = "INFO"
 
     # ---- factories ----
@@ -113,6 +123,8 @@ class RootConfig:
             "rate_limit_burst",
             "max_upload_bytes",
             "body_max_bytes",
+            "audit_retention_days",
+            "audit_log_filename",
             "log_level",
         ):
             env_key = f"FIRM_BOT_{key.upper()}"

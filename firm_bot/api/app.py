@@ -8,11 +8,12 @@ import time
 import typing
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, UploadFile
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 from ..chunk import chunk_documents
@@ -538,7 +539,9 @@ async def _do_query(
             timeout_s=root.llm_timeout_s,
         )
 
-    return {
+    t_end = time.perf_counter()
+    total_latency_ms = round((t_end - t_start) * 1000, 2)
+    response: dict[str, Any] = {
         "answer": answer_text,
         "cited": cited,
         "hits": [
@@ -557,8 +560,89 @@ async def _do_query(
         "model": model,
         "judge_model": root.llm_judge_model if run_guard else None,
         "confidence": _compute_confidence(cited, annotated, len(hits)),
-        "latency_ms": round((time.perf_counter() - t_start) * 1000, 2),
+        "latency_ms": total_latency_ms,
     }
+
+    # ---- audit log ----
+    # Append one record per query. We do this AFTER building the
+    # response so a write failure can't break the user's response —
+    # audit best-effort, query path stays hard.
+    _audit_record(
+        slug=slug,
+        question=question,
+        answer_text=answer_text,
+        cited=cited,
+        annotated=annotated,
+        hits=hits,
+        total_latency_ms=total_latency_ms,
+        model=model,
+        reranker=root.reranker_model or None,
+    )
+
+    return response
+
+
+def _audit_record(
+    slug: str,
+    question: str,
+    answer_text: str,
+    cited: Any,
+    annotated: Any,
+    hits: Any,
+    total_latency_ms: float,
+    model: str,
+    reranker: str | None,
+) -> None:
+    """Append one audit log entry. Best-effort — failures are logged, never raised."""
+    from ..audit_log import (
+        AuditRecord,
+        append_record,
+        hash_text,
+        request_id_now,
+        utc_now_iso,
+    )
+
+    root = _get_root()
+    firm_dir = Path(root.data_dir) / "firms" / slug
+    path = firm_dir / root.audit_log_filename
+
+    # Estimate retrieval vs answer latency split using the response
+    # totals. We don't have a clean split point in the existing code,
+    # so we attribute everything to retrieval and 0 to answer — the
+    # total latency is the real number; the split is informational.
+    # A future refactor can thread a separate answer_latency_ms.
+    retrieval_latency_ms = total_latency_ms
+    answer_latency_ms = 0.0
+
+    guard_summary = "skipped"
+    guard_issue_count = 0
+    if annotated is not None:
+        guard_summary = annotated.summary or "ok"
+        guard_issue_count = len(getattr(annotated, "issues", []) or [])
+
+    record = AuditRecord(
+        timestamp=utc_now_iso(),
+        request_id=request_id_now(),
+        firm_slug=slug,
+        question_hash=hash_text(question),
+        question_len_chars=len(question),
+        answer_len_chars=len(answer_text),
+        citation_count=len(cited) if cited else 0,
+        guard_summary=guard_summary,
+        guard_issue_count=guard_issue_count,
+        confidence=_compute_confidence(cited, annotated, len(hits)),
+        model=model,
+        retrieval_latency_ms=retrieval_latency_ms,
+        answer_latency_ms=answer_latency_ms,
+        total_latency_ms=total_latency_ms,
+        hit_count=len(hits),
+        reranker=reranker,
+        api_key_hash=None,  # populated by middleware in a future pass
+    )
+    try:
+        append_record(path, record)
+    except Exception as e:  # pragma: no cover - defensive
+        log.warning("audit log append failed for %s: %s", slug, e)
 
 
 def _marker_short(meta: dict[str, Any]) -> str:
@@ -613,6 +697,74 @@ class EvalCase(BaseModel):
 
 class EvalRequest(BaseModel):
     cases: list[EvalCase]
+
+
+@app.get("/v1/firms/{slug}/audit-log")
+async def audit_log(
+    slug: str,
+    since: str | None = None,
+    until: str | None = None,
+    fmt: str = "json",
+) -> Response:
+    """Read the per-firm audit log with optional time-window filtering.
+
+    Query parameters:
+      - since: ISO 8601 lower bound (default: 90 days ago)
+      - until: ISO 8601 upper bound (default: now)
+      - fmt: json (array), jsonl (newline-delimited), csv, or md
+
+    Returns the matching records in the requested format. Records
+    never include the question or answer text — only their SHA-256
+    hashes and lengths. See `firm_bot/audit_log.py` for the schema.
+
+    For a CSV import into a SIEM, use `fmt=csv`. For an Excel pivot,
+    use `fmt=json`.
+    """
+    from ..audit_log import (
+        prune_older_than,
+        read_audit_log,
+        to_csv,
+        to_json,
+        to_jsonl,
+        to_markdown,
+    )
+
+    root = _get_root()
+    firm_dir = Path(root.data_dir) / "firms" / slug
+    path = firm_dir / root.audit_log_filename
+
+    # Prune old records on read if retention > 0
+    if root.audit_retention_days > 0:
+        try:
+            prune_older_than(path, root.audit_retention_days)
+        except Exception as e:  # pragma: no cover
+            log.warning("audit log prune failed: %s", e)
+
+    since_dt = (
+        datetime.fromisoformat(since)
+        if since
+        else datetime.now(tz=UTC) - timedelta(days=root.audit_retention_days)
+    )
+    until_dt = datetime.fromisoformat(until) if until else datetime.now(tz=UTC)
+    if since_dt.tzinfo is None:
+        since_dt = since_dt.replace(tzinfo=UTC)
+    if until_dt.tzinfo is None:
+        until_dt = until_dt.replace(tzinfo=UTC)
+
+    records = list(read_audit_log(path, since=since_dt, until=until_dt))
+
+    if fmt == "csv":
+        body = to_csv(iter(records))
+        return Response(content=body, media_type="text/csv")
+    if fmt == "md":
+        body = to_markdown(records)
+        return Response(content=body, media_type="text/markdown")
+    if fmt == "jsonl":
+        body = to_jsonl(iter(records))
+        return Response(content=body, media_type="application/x-ndjson")
+    # default: json
+    body = to_json(iter(records))
+    return Response(content=body, media_type="application/json")
 
 
 @app.post("/v1/firms/{slug}/eval")

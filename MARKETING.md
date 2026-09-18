@@ -8,6 +8,25 @@ that fit your voice; don't blast all of them at once.
 > from. Mixing old and new visual identity in the same campaign is
 > worse than either alone.
 
+## Long-form artifacts
+
+The full campaign kit ships with these long-form pieces. Pick
+whichever fits the channel and the audience.
+
+| File | Length | Use |
+|------|--------|-----|
+| [`WHITEPAPER.md`](WHITEPAPER.md)            | ~5,300 words / 929 lines | Sales calls, partnerships, conference talks, conference proceedings, formal RFP responses |
+| [`ARTICLE_DEVTO.md`](ARTICLE_DEVTO.md)      | ~2,000 words             | Dev.to article (was outline; now full draft) |
+| [`ARTICLE_BLOG.md`](ARTICLE_BLOG.md)        | ~2,200 words             | Engineering deep-dive for Medium / Substack / Hashnode |
+| [`TWEETS.md`](TWEETS.md)                    | 3 threads, 21 tweets     | Twitter/X — 3 new angle variants beyond the launch thread below |
+| [`PRODUCT_HUNT.md`](PRODUCT_HUNT.md)        | ~1,300 words + 4 themes  | Product Hunt launch copy with maker's comments and reply themes |
+| [`INDIE_HACKERS.md`](INDIE_HACKERS.md)      | ~820 words               | IndieHackers launch post (first-person, building-in-public) |
+
+The whitepaper is the canonical reference. The Dev.to and blog
+articles distill it for the engineering reader. The tweet threads,
+Product Hunt, and IndieHackers copy below are the per-channel
+short-form plays.
+
 ## Assets
 
 All in `docs/assets/marketing/`:
@@ -28,19 +47,31 @@ All in `docs/assets/marketing/`:
 | `social-preview.png`  | 1280x640 — set as the repo's social preview   | 84 KB  |
 
 The three explainer videos ship with audio narration generated via
-macOS `say` (Alex voice, US English, AAC @ 192kbps mono). Rendered
-at 30fps with H.264 preset slow / crf 18 for cleaner quality than
-the first pass. Regenerable via `scripts/marketing/render_explainers_v2.py`.
+macOS `say` (Samantha voice, US English, AAC @ 192kbps mono). The
+scripts use `[[slnc N]]` prosody markers for deliberate pauses
+between sentences. Rendered at 30fps with H.264 preset slow /
+crf 18. Regenerable via `scripts/marketing/render_explainers_v3.py`.
 
 Regenerate any of these by running the matching `scripts/marketing/render_*.py`.
 
 ## Channels (in priority order)
 
 1. **Hacker News** — Show HN. Highest-quality signal source.
-2. **Twitter/X** — single-launch tweet + thread + GIF.
+2. **Twitter/X** — single-launch tweet + thread + GIF. Three more
+   thread variants on different angles are in [`TWEETS.md`](TWEETS.md).
 3. **Reddit** — r/LocalLLaMA first (audience overlap), then r/MachineLearning, r/Python, r/legaltech.
 4. **LinkedIn** — long-form post for the professional-services audience.
-5. **Dev.to** — full article with the architecture explainer.
+5. **Dev.to** — full article (see [`ARTICLE_DEVTO.md`](ARTICLE_DEVTO.md)).
+6. **Product Hunt** — see [`PRODUCT_HUNT.md`](PRODUCT_HUNT.md) for
+   tagline, short + long description, maker's comments, and themes
+   to hunt in launch-day replies.
+7. **IndieHackers** — see [`INDIE_HACKERS.md`](INDIE_HACKERS.md) for
+   the first-person launch post.
+8. **Engineering blog / Substack / Hashnode / Medium** — see
+   [`ARTICLE_BLOG.md`](ARTICLE_BLOG.md) for the engineering
+   deep-dive.
+9. **Whitepaper for sales / partnerships / conferences** — see
+   [`WHITEPAPER.md`](WHITEPAPER.md) for the formal document.
 
 ## Channel 1 — Hacker News (Show HN)
 
@@ -342,28 +373,19 @@ Attach: `hero.png` (1600x900).
 
 ## Channel 5 — Dev.to
 
+The full draft is in [`ARTICLE_DEVTO.md`](ARTICLE_DEVTO.md)
+(~2,000 words, 8 sections, real code snippets from `firm_bot/`,
+inline image references, honest limitations section).
+
 **Title:**
 ```
 Building firm-bot: a local-first RAG chatbot for legal & audit
 ```
 
-**Outline:**
+**Subtitle:** A walk through the architecture, the hard parts, and
+the numbers from our v0.1 release.
 
-1. **The problem** — cloud RAG and the compliance gap
-2. **Why local-first** — chain of custody, air-gap, audit trail
-3. **The architecture** (use `architecture.png`) — six stages
-4. **The hard parts:**
-   - Structure-aware chunking (Article/Section/Title Case)
-   - Citation-required prompts + LLM-as-judge guard
-   - Hybrid retrieval (BM25 + dense + RRF)
-5. **What we measured** — CUAD benchmark, 0.538 vs 0.462 naive
-6. **Operating it** — Prometheus /metrics, rate limiting, threat model
-7. **Try it** — `git clone … && firm-bot serve`
-8. **What's next** — v0.2 roadmap (auth, multi-user, LoRA)
-
-Length: ~1200 words. Code blocks for install + a query example.
-
-Attach: `architecture.png`, `comparison.png`, `demo.gif`.
+Attach: `architecture.png`, `benchmark.png`, `hero.png`.
 
 ## Posting cadence (suggested)
 

@@ -480,7 +480,9 @@ async def _do_query(
         raise HTTPException(400, "empty question")
 
     from ..answer.guard import answer_with_ollama, verify_citations
+    from ..answer.injection import scan_hits
     from ..answer.prompt import build_messages, extract_cited_sources
+    from ..observability import stage_timer
     from ..retrieve.hybrid import hybrid_search
 
     if store.collection().count() == 0:
@@ -493,16 +495,41 @@ async def _do_query(
         from ..retrieve.rerank import get_reranker
 
         reranker = get_reranker(root.reranker_model)
-    hits = hybrid_search(
-        store=store,
-        query=question,
-        embed=embed,
-        bm25_weight=root.hybrid_bm25_weight,
-        dense_weight=root.hybrid_dense_weight,
-        k=k or root.answer_k,
-        reranker=reranker,
-        rerank_top_k=root.rerank_top_k,
-    )
+
+    # ---- retrieve ----
+    # ``stage_timer`` records to the Prometheus histogram AND yields
+    # elapsed_ms for the audit record below — see the perf-report
+    # follow-up that wired this in (previously answer_latency_ms was
+    # hard-coded to 0.0 in the audit record).
+    with stage_timer("retrieve") as t_retrieve:
+        hits = hybrid_search(
+            store=store,
+            query=question,
+            embed=embed,
+            bm25_weight=root.hybrid_bm25_weight,
+            dense_weight=root.hybrid_dense_weight,
+            k=k or root.answer_k,
+            reranker=reranker,
+            rerank_top_k=root.rerank_top_k,
+        )
+    retrieve_latency_ms = t_retrieve["elapsed_ms"]
+
+    # ---- prompt-injection pre-pass ----
+    # Cheap regex scan over retrieved chunks. The real defence is the
+    # instruction-defence suffix in ``prompt.build_messages`` plus the
+    # guard LLM; this filter exists to surface suspicious chunks on
+    # the response payload and audit log so operators can investigate.
+    # Off via FIRM_BOT_INJECTION_FILTER=0 for benchmarking.
+    inj_enabled = os.environ.get("FIRM_BOT_INJECTION_FILTER", "1").lower() not in ("0", "false", "no")
+    injection_hits = 0
+    injection_patterns: list[str] = []
+    if inj_enabled:
+        with stage_timer("injection_scan") as t_inj:
+            injection_hits, injection_patterns = scan_hits(hits)
+        injection_scan_latency_ms = t_inj["elapsed_ms"]
+    else:
+        injection_scan_latency_ms = 0.0
+
     if not hits:
         return {
             "answer": "I don't know — no relevant chunks were retrieved.",
@@ -512,32 +539,45 @@ async def _do_query(
             "confidence": 0.0,
             "latency_ms": round((time.perf_counter() - t_start) * 1000, 2),
             "model": store.config.llm_model or root.llm_model,
+            "prompt_injection_suspected": injection_hits,
+            "prompt_injection_patterns": injection_patterns,
+            "stage_latency_ms": {
+                "retrieve": retrieve_latency_ms,
+                "injection_scan": injection_scan_latency_ms,
+            },
         }
 
     model = store.config.llm_model or root.llm_model
     system = store.config.effective_system_prompt(root)
     messages = build_messages(system, question, hits, history=history)
-    answer_text = answer_with_ollama(
-        root.ollama_host,
-        model,
-        messages,
-        root.llm_timeout_s,
-    )
+
+    # ---- answer LLM ----
+    with stage_timer("answer") as t_answer:
+        answer_text = answer_with_ollama(
+            root.ollama_host,
+            model,
+            messages,
+            root.llm_timeout_s,
+        )
+    answer_latency_ms = t_answer["elapsed_ms"]
     cited = extract_cited_sources(answer_text)
 
     annotated = None
+    guard_latency_ms = 0.0
     if run_guard:
         sources_for_judge = [
             (f"[{h.metadata.get('source_name', '?')}:{_marker_short(h.metadata)}]", h.text)
             for h in hits
         ]
-        annotated = verify_citations(
-            answer=answer_text,
-            sources=sources_for_judge,
-            ollama_host=root.ollama_host,
-            judge_model=root.llm_judge_model,
-            timeout_s=root.llm_timeout_s,
-        )
+        with stage_timer("guard") as t_guard:
+            annotated = verify_citations(
+                answer=answer_text,
+                sources=sources_for_judge,
+                ollama_host=root.ollama_host,
+                judge_model=root.llm_judge_model,
+                timeout_s=root.llm_timeout_s,
+            )
+        guard_latency_ms = t_guard["elapsed_ms"]
 
     t_end = time.perf_counter()
     total_latency_ms = round((t_end - t_start) * 1000, 2)
@@ -561,6 +601,14 @@ async def _do_query(
         "judge_model": root.llm_judge_model if run_guard else None,
         "confidence": _compute_confidence(cited, annotated, len(hits)),
         "latency_ms": total_latency_ms,
+        "prompt_injection_suspected": injection_hits,
+        "prompt_injection_patterns": injection_patterns,
+        "stage_latency_ms": {
+            "retrieve": retrieve_latency_ms,
+            "injection_scan": injection_scan_latency_ms,
+            "answer": answer_latency_ms,
+            "guard": guard_latency_ms,
+        },
     }
 
     # ---- audit log ----
@@ -574,6 +622,12 @@ async def _do_query(
         cited=cited,
         annotated=annotated,
         hits=hits,
+        retrieve_latency_ms=retrieve_latency_ms,
+        answer_latency_ms=answer_latency_ms,
+        guard_latency_ms=guard_latency_ms,
+        injection_scan_latency_ms=injection_scan_latency_ms,
+        injection_hits=injection_hits,
+        injection_patterns=injection_patterns,
         total_latency_ms=total_latency_ms,
         model=model,
         reranker=root.reranker_model or None,
@@ -589,11 +643,24 @@ def _audit_record(
     cited: Any,
     annotated: Any,
     hits: Any,
+    retrieve_latency_ms: float,
+    answer_latency_ms: float,
+    guard_latency_ms: float,
+    injection_scan_latency_ms: float,
+    injection_hits: int,
+    injection_patterns: list[str],
     total_latency_ms: float,
     model: str,
     reranker: str | None,
 ) -> None:
-    """Append one audit log entry. Best-effort — failures are logged, never raised."""
+    """Append one audit log entry. Best-effort — failures are logged, never raised.
+
+    Per-stage latencies come from ``stage_timer`` wrappers in
+    ``_do_query`` rather than being attributed heuristically — the
+    pre-0.2 audit record always wrote ``retrieval_latency_ms = total``
+    and ``answer_latency_ms = 0``, which made the log useless for
+    diagnosing retrieval vs answer regressions.
+    """
     from ..audit_log import (
         AuditRecord,
         append_record,
@@ -606,13 +673,14 @@ def _audit_record(
     firm_dir = Path(root.data_dir) / "firms" / slug
     path = firm_dir / root.audit_log_filename
 
-    # Estimate retrieval vs answer latency split using the response
-    # totals. We don't have a clean split point in the existing code,
-    # so we attribute everything to retrieval and 0 to answer — the
-    # total latency is the real number; the split is informational.
-    # A future refactor can thread a separate answer_latency_ms.
-    retrieval_latency_ms = total_latency_ms
-    answer_latency_ms = 0.0
+    # The pre-existing schema expects ``retrieval_latency_ms`` to
+    # include everything up to the answer LLM (retrieve + injection
+    # scan), and ``answer_latency_ms`` to include answer + guard. The
+    # injection scan is so cheap (<1 ms) that lumping it into
+    # retrieval doesn't distort the numbers in practice, and matches
+    # the operational question "how long did retrieval take?".
+    retrieval_latency_ms = round(retrieve_latency_ms + injection_scan_latency_ms, 2)
+    answer_latency_with_guard_ms = round(answer_latency_ms + guard_latency_ms, 2)
 
     guard_summary = "skipped"
     guard_issue_count = 0
@@ -633,11 +701,13 @@ def _audit_record(
         confidence=_compute_confidence(cited, annotated, len(hits)),
         model=model,
         retrieval_latency_ms=retrieval_latency_ms,
-        answer_latency_ms=answer_latency_ms,
+        answer_latency_ms=answer_latency_with_guard_ms,
         total_latency_ms=total_latency_ms,
         hit_count=len(hits),
         reranker=reranker,
         api_key_hash=None,  # populated by middleware in a future pass
+        prompt_injection_hits=injection_hits,
+        prompt_injection_patterns=list(injection_patterns),
     )
     try:
         append_record(path, record)

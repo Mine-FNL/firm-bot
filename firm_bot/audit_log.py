@@ -51,7 +51,7 @@ import os
 import uuid
 from collections.abc import Iterator
 from contextlib import suppress
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -82,6 +82,11 @@ class AuditRecord:
     hit_count: int
     reranker: str | None
     api_key_hash: str | None
+    # v0.2 — prompt injection pre-pass on retrieved chunks.
+    # Defaults are zero/empty so older log records (pre-injection)
+    # still parse cleanly when read back in.
+    prompt_injection_hits: int = 0
+    prompt_injection_patterns: list[str] = field(default_factory=list)
 
 
 # ---- hashing helpers ---------------------------------------------------
@@ -223,6 +228,8 @@ _FIELDS: list[str] = [
     "hit_count",
     "reranker",
     "api_key_hash",
+    "prompt_injection_hits",
+    "prompt_injection_patterns",
 ]
 
 

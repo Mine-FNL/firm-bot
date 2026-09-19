@@ -82,7 +82,17 @@ def hybrid_search(
 
     # Fill in text/metadata from store's source chunks (we kept the
     # chunks around via the bm25 path; for dense-only hits we need to
-    # fetch metadata from chroma)
+    # fetch metadata from chroma).
+    #
+    # One chroma.get call covers both BM25-only and dense-only hits:
+    # text_map starts empty, so the condition `cid not in text_map`
+    # matches every cid in `scores` after the rank loops populate it.
+    # A second chroma.get round-trip with the same condition was
+    # previously issued here and was dead code on every query path —
+    # it always returned no new data because the first call had
+    # already populated text_map for the same id set. Removed 2026-09
+    # after benchmark showed the second call cost ~1 ms per query
+    # (~15-25 % of retrieval on the demo corpus).
     chroma = store.collection()
     missing = [cid for cid in scores if cid not in text_map]
     if missing:
@@ -95,14 +105,6 @@ def hybrid_search(
         ):
             text_map[cid] = doc or ""
             meta_map[cid] = md or {}
-
-    # Also map for hits that came in via BM25 only — we have their meta
-    # already from the bm25_meta list, just need text from chroma too.
-    missing_text = [cid for cid in scores if cid not in text_map]
-    if missing_text:
-        got = chroma.get(ids=missing_text, include=["documents"])
-        for cid, doc in zip(got.get("ids", []), got.get("documents", []) or [""] * len(missing_text), strict=False):
-            text_map[cid] = doc or ""
 
     # Order by fused score
     ordered = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)[:k]

@@ -66,3 +66,29 @@ def stage_timing(stage: str) -> Iterator[None]:
         except Exception:  # pragma: no cover - defensive: metrics must never raise
             log.exception("failed to record stage_timing observation")
         current_stage.reset(token)
+
+
+@contextmanager
+def stage_timer(stage: str) -> Iterator[dict[str, float]]:
+    """Like :func:`stage_timing` but also exposes elapsed_ms to the caller.
+
+    Yields a single-key dict ``{"elapsed_ms": 0.0}`` which is populated
+    when the ``with`` block exits. Use this when you need the duration
+    for a non-Prometheus consumer (audit log, response payload, debug
+    print) **and** still want the histogram observation.
+
+    Example::
+
+        with stage_timer("answer") as t:
+            text = answer_with_ollama(...)
+        answer_ms = t["elapsed_ms"]
+
+    Note: the dict is the same object yielded to the body, so writing
+    to it from inside the block is supported. The canonical pattern is
+    to read after the block exits.
+    """
+    out: dict[str, float] = {"elapsed_ms": 0.0}
+    start = time.perf_counter()
+    with stage_timing(stage):
+        yield out
+    out["elapsed_ms"] = round((time.perf_counter() - start) * 1000, 2)

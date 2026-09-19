@@ -41,7 +41,7 @@ from .metrics import (
     stage_latency_seconds,
 )
 from .middleware import ObservabilityMiddleware
-from .timing import current_request_id, current_stage, stage_timing
+from .timing import current_request_id, current_stage, stage_timer, stage_timing
 
 __all__ = [
     "CONTENT_TYPE_LATEST",
@@ -57,5 +57,6 @@ __all__ = [
     "query_requests",
     "setup_logging",
     "stage_latency_seconds",
+    "stage_timer",
     "stage_timing",
 ]

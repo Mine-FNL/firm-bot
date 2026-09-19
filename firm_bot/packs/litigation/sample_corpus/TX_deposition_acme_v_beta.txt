@@ -1,0 +1,83 @@
+[38:1] IN THE UNITED STATES DISTRICT COURT
+[38:2] DISTRICT OF [REDACTED JURISDICTION]
+[38:3]
+[38:4] ACME CORP,                       )
+[38:5]     Plaintiff,                  )
+[38:6]     v.                           ) Case No. 1:24-cv-00001-ABC
+[38:7] BETA CORP,                      )
+[38:8]     Defendant.                  )
+[38:9]
+[38:10] DEPOSITION OF DR. ELLEN REYES
+[38:11] Taken on [REDACTED DATE]
+[38:12] Reported by: [REDACTED REPORTER NAME], CSR
+[38:13]
+[38:14] APPEARANCES:
+[38:15] For the Plaintiff:  [REDACTED FIRM NAME], by [REDACTED ATTORNEY NAME]
+[38:16] For the Defendant:  [REDACTED FIRM NAME], by [REDACTED ATTORNEY NAME]
+[38:17]
+[38:18]                                          * * *
+[38:19]
+[38:20] Q.  Doctor, would you please state your name for the record?
+[38:21] A.  Dr. Ellen Reyes.
+[38:22] Q.  And where are you currently employed?
+[38:23] A.  At [REDACTED UNIVERSITY] as a tenured professor of
+[38:24]     metallurgical engineering.
+[38:25]
+[39:1] Q.  Doctor, did you prepare the report attached as Exhibit
+[39:2]     A to the First Amended Complaint in this matter?
+[39:3] A.  I did.
+[39:4] Q.  In that report, you concluded that the fasteners at
+[39:5]     issue did not meet the AS9100D hardness specification;
+[39:6]     is that correct?
+[39:7] A.  That is correct.
+[39:8] Q.  On what did you base that conclusion?
+[39:9] A.  I conducted Rockwell C-scale hardness testing on a
+[39:10]    sample of 200 fasteners randomly drawn from the 38
+[39:11]    deliveries under the blanket purchase order. The
+[39:12]    mean hardness value was 35.2 HRC, against a
+[39:13]    specification minimum of 38.0 HRC.
+[39:14] Q.  Did you also examine the heat-treatment records that
+[39:15]    accompanied the shipments?
+[39:16] A.  I did.
+[39:17] Q.  And what did you conclude about those records?
+[39:18] A.  That they were internally inconsistent. The recorded
+[39:19]    austenitising temperatures varied by less than two
+[39:20]    degrees Celsius across 38 production batches, which is
+[39:21]    implausibly tight. Real furnace records show much
+[39:22]    wider variance.
+[40:1] Q.  Doctor, are you aware of any reason why Defendant would
+[40:2]     have provided records you describe as implausibly
+[40:3]     tight?
+[40:4] A.  Only that the records may have been back-fitted to a
+[40:5]     desired specification, rather than recorded during
+[40:6]     actual production runs.
+[40:7] Q.  Have you ever testified as an expert witness before?
+[40:8] A.  Yes. Approximately twenty-three times in matters
+[40:9]     involving fastener or component failures.
+[40:10] Q.  Has any court excluded your testimony under Daubert?
+[40:11] A.  No.
+[40:12] Q.  Doctor, let's turn to Exhibit B. This is a series of
+[40:13]     photographs of the [REDACTED FACILITY] plant. Do you
+[40:14]     recognise them?
+[40:15] A.  I do.
+[40:16] Q.  And what do they show?
+[40:17] A.  The plant has three production lines. Line 1 and
+[40:18]     Line 2 produce to the AS9100D specification. Line 3
+[40:19]     was, at the time of the deliveries, shut down for
+[40:20]     retrofitting.
+[41:1] Q.  Does Line 3 appear operational in any of the
+[41:2]     photographs?
+[41:3] A.  No. Line 3 is dark in all six photographs.
+[41:4] Q.  In your expert opinion, is it plausible that
+[41:5]     Defendant produced all 38 deliveries from Lines 1 and
+[41:6]     2 alone, given the timing and volume?
+[41:7] A.  No. The volume, taken together with the delivery
+[41:8]     cadence, exceeds the rated capacity of Lines 1 and 2
+[41:9]     during the period in question.
+[41:10] Q.  What do you conclude from that?
+[41:11] A.  That the fasteners could not all have been produced at
+[41:12]     the [REDACTED FACILITY] plant, consistent with the
+[41:13]     representation in Article 4 of the Agreement.
+[41:14] Q.  Doctor, I have no further questions at this time.
+[41:15] MR. [REDACTED]:  Same.
+[41:16] (Whereupon, the deposition concluded at 11:47 a.m.)

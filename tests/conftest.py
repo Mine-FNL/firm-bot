@@ -30,6 +30,16 @@ def tmp_data_dir(tmp_path: Path) -> Path:
         + "embedding_model: sentence-transformers/all-MiniLM-L6-v2\n"
         + "llm_model: mock-llm\n"
         + "llm_judge_model: mock-judge\n"
+        # Rate limit cranked up for the test suite. The default
+        # 10 RPS / 20 burst is sized for a single remote user; the
+        # e2e tests fire dozens of requests in a row from one
+        # loopback client (the bulk endpoint alone does 5 ingest
+        # ops + 3 query items + 1 health check per scenario) and
+        # would otherwise 429 each other. Set it well above any
+        # realistic test workload so rate-limiting isn't a
+        # gate-keeping concern in CI.
+        + "rate_limit_rps: 1000.0\n"
+        + "rate_limit_burst: 10000\n"
     )
     return data
 
@@ -38,6 +48,37 @@ def tmp_data_dir(tmp_path: Path) -> Path:
 def env_data_dir(monkeypatch: pytest.MonkeyPatch, tmp_data_dir: Path) -> Path:
     monkeypatch.setenv("FIRM_BOT_DATA_DIR", str(tmp_data_dir))
     return tmp_data_dir
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter() -> Any:
+    """Reset the global rate-limiter bucket map between tests.
+
+    The ``SecurityMiddleware`` holds a single ``RateLimiter`` instance
+    for the lifetime of the FastAPI app (created at import time via
+    ``_register_middleware``). Without a reset, tokens accumulate and
+    the test suite starts hitting 429s on the bulk-query tests.
+    """
+    try:
+        from firm_bot.api.app import app as app_obj
+    except Exception:
+        # app not yet imported — first test triggers import; the next
+        # test gets a reset. This is fine.
+        yield
+        return
+
+    def _reset() -> None:
+        for mw in getattr(app_obj, "user_middleware", []):
+            kwargs = getattr(mw, "kwargs", None)
+            if isinstance(kwargs, dict):
+                rl = kwargs.get("rate_limiter")
+                if rl is not None and hasattr(rl, "reset"):
+                    rl.reset()
+                    return
+
+    _reset()
+    yield
+    _reset()
 
 
 # ---- Ollama mock -------------------------------------------------------

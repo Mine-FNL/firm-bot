@@ -1,0 +1,123 @@
+UNITED STATES DISTRICT COURT
+DISTRICT OF [REDACTED JURISDICTION]
+
+ACME CORP, a [REDACTED STATE] corporation,
+    Plaintiff,
+    v.                                          Case No. 1:24-cv-00001-ABC
+BETA CORP, a [REDACTED STATE] corporation,
+    Defendant.
+
+DEFENDANT BETA CORP'S MOTION FOR SUMMARY JUDGMENT ON COUNT I (FRAUD)
+
+    Pursuant to Rule 56, Defendant BETA CORP ("Defendant")
+respectfully moves for summary judgment in its favor on Count I
+(Fraud) of the First Amended Complaint and states as follows:
+
+                       STATEMENT OF FACTS
+
+1.  The Supply Agreement (the "Agreement") between ACME CORP
+    ("Plaintiff") and Defendant was executed on [REDACTED DATE].
+
+2.  Article 4 of the Agreement recites the manufacturing-location
+    representation challenged in Count I.
+
+3.  Article 7 of the Agreement recites the certification
+    representation challenged in Count I.
+
+4.  All 38 deliveries under the blanket purchase order were
+    accompanied by certificates of conformance.
+
+5.  Defendant did not disclose the use of the [REDACTED FOREIGN
+    COUNTRY] sub-supplier facility before contract formation; the
+    first sub-supplier shipment occurred on [REDACTED DATE], over
+    four months after Agreement execution.
+
+                     STANDARD OF REVIEW
+
+6.  Summary judgment is appropriate where "there is no genuine
+    dispute as to any material fact and the movant is entitled to
+    judgment as a matter of law." Fed. R. Civ. P. 56(a).
+
+7.  The moving party bears the initial burden of identifying the
+    absence of a genuine dispute. See Celotex Corp. v. Catrett,
+    477 U.S. 317, 322-23 (1986).
+
+8.  Once met, the burden shifts to the non-moving party to
+    "designate specific facts showing that there is a genuine
+    issue for trial." Anderson v. Liberty Lobby, Inc., 477 U.S.
+    242, 248 (1986).
+
+9.  A factual dispute is "material" only if, "under the governing
+    law, resolution of the dispute might affect the outcome of the
+    suit." Id. at 248.
+
+                          ARGUMENT
+
+    I. PLAINTIFF CANNOT ESTABLISH JUSTIFIABLE RELIANCE.
+
+10. To prevail on a fraud claim under [REDACTED STATE] law,
+    Plaintiff must prove: (i) a material misrepresentation; (ii)
+    scienter; (iii) intent to induce reliance; (iv) actual
+    reliance; and (v) damages. See [REDACTED CASE CITATION].
+
+11. The Facility Representation concerns the physical location of
+    manufacture — a matter within Defendant's specialised
+    knowledge but not within Plaintiff's independent verification
+    capacity prior to delivery.
+
+12. The economic-loss rule bars tort recovery for breach of a
+    contractual representation where the plaintiff suffers only
+    economic damages unaccompanied by physical harm or property
+    damage. See [REDACTED STATE] Restatement (Second) of Torts
+    § 525 et seq.; [REDACTED STATE CITATION].
+
+13. Here, Plaintiff's claimed injury is wholly economic: the
+    $4,200,000 purchase price. No fastener was incorporated into
+    an end-product that caused physical harm. No physical property
+    was damaged.
+
+14. The economic-loss rule therefore forecloses Count I as a
+    matter of law. See [REDACTED STATE] Supreme Court decision in
+    [REDACTED CASE] holding that "tort recovery is unavailable
+    where the duty breached is rooted entirely in the contract."
+
+    II. THE CERTIFICATION REPRESENTATION IS NOT ACTIONABLE.
+
+15. The Certification Representation concerns Defendant's quality
+    management system, a status that is, by its nature, true at
+    the moment of certification.
+
+16. Plaintiff cites no evidence that the AS9100D certification was
+    inoperative at the time the representation was made.
+
+17. Even if Plaintiff could establish a misrepresentation, the
+    doctrine of [REDACTED DOCTRINE NAME] bars recovery where the
+    representation concerns a future event or condition that does
+    not materialise.
+
+    III. PLAINTIFF FAILED TO PLEAD FRAUD WITH PARTICULARITY.
+
+18. Rule 9(b) requires that "[i]n alleging fraud or mistake, a
+    party must state with particularity the circumstances
+    constituting fraud or mistake."
+
+19. Plaintiff's First Amended Complaint pleads the Facility
+    Representation in conclusory terms ("approximately 23%"),
+    without identifying which of the 38 shipments were
+    non-conforming.
+
+20. The Rivera Report, cited in paragraph 13 of the Complaint, is
+    inadmissible hearsay absent the testimony of its preparer.
+
+                          CONCLUSION
+
+21. For the foregoing reasons, Defendant respectfully requests
+    that the Court grant summary judgment in Defendant's favor on
+    Count I and dismiss the fraud claim with prejudice, reserving
+    all rights with respect to Counts II and III.
+
+Dated: [REDACTED DATE]
+                              Respectfully submitted,
+                              [REDACTED FIRM NAME]
+                              /s/ [REDACTED ATTORNEY NAME]
+                              Attorneys for Defendant BETA CORP

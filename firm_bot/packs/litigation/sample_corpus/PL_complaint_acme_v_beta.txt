@@ -1,0 +1,120 @@
+UNITED STATES DISTRICT COURT
+DISTRICT OF [REDACTED JURISDICTION]
+
+ACME CORP, a [REDACTED STATE] corporation,
+    Plaintiff,
+    v.                                          Case No. 1:24-cv-00001-ABC
+BETA CORP, a [REDACTED STATE] corporation,
+    Defendant.
+
+FIRST AMENDED COMPLAINT FOR FRAUD AND BREACH OF CONTRACT
+
+    Plaintiff ACME CORP ("Plaintiff"), by and through its undersigned
+counsel, brings this action against Defendant BETA CORP ("Defendant")
+and alleges as follows:
+
+                                JURISDICTION AND VENUE
+
+1.  This Court has subject matter jurisdiction under 28 U.S.C.
+    § 1332(a)(1) because the parties are citizens of different
+    [REDACTED STATES] and the amount in controversy exceeds $75,000.
+
+2.  Venue is proper in this District under 28 U.S.C. § 1391(b)(2)
+    because a substantial part of the events giving rise to the
+    claims occurred in this District.
+
+3.  This action arises under the laws of the United States and the
+    [REDACTED STATE] Uniform Commercial Code, and the Court has
+    supplemental jurisdiction over the state-law claims under 28
+    U.S.C. § 1367.
+
+                                    THE PARTIES
+
+4.  Plaintiff ACME CORP is a [REDACTED STATE] corporation with its
+    principal place of business in [REDACTED CITY], [REDACTED STATE].
+
+5.  Defendant BETA CORP is a [REDACTED STATE] corporation with its
+    principal place of business in [REDACTED CITY], [REDACTED STATE].
+
+6.  Plaintiff is engaged in the business of manufacturing industrial
+    sensors. Defendant is engaged in the business of supplying
+    component parts to the aerospace industry.
+
+                          FACTUAL ALLEGATIONS
+
+7.  On or about [REDACTED DATE], the parties entered into a written
+    Supply Agreement (the "Agreement"), under which Defendant agreed
+    to manufacture and sell to Plaintiff specialised titanium alloy
+    fasteners over a five-year term.
+
+8.  The Agreement required Defendant to comply with industry
+    standards AS9100D and NADCAP AC7110/12.
+
+9.  Defendant represented in Article 4 of the Agreement that all
+    fasteners would be manufactured in its [REDACTED FACILITY] plant.
+
+10. Defendant represented in Article 7 of the Agreement that its
+    quality-management system had been audited and certified as of
+    [REDACTED DATE].
+
+11. In reliance on these representations, Plaintiff placed a
+    blanket purchase order on [REDACTED DATE] for $4,200,000 of
+    fasteners.
+
+12. Between [REDACTED DATE] and [REDACTED DATE], Defendant
+    delivered 38 shipments of fasteners.
+
+13. The shipments were non-conforming in two material respects:
+    (a) approximately 23% of the delivered fasteners were manufactured
+    at an un-audited sub-supplier facility in [REDACTED FOREIGN
+    COUNTRY], not at Defendant's [REDACTED FACILITY] plant; and
+    (b) the heat-treatment records supplied with the shipments were
+    fabricated. The Rivera Report (Exhibit A) shows the fasteners do
+    not meet the AS9100D hardness specification.
+
+                              COUNT I — FRAUD
+
+14. Plaintiff realleges and incorporates by reference paragraphs 1
+    through 13 above as if fully set forth herein.
+
+15. As set forth in paragraphs 9 and 10 above, Defendant made the
+    following material representations of fact to Plaintiff:
+
+    a. That the fasteners would be manufactured at its [REDACTED
+       FACILITY] plant (the "Facility Representation"); and
+
+    b. That its quality-management system had been audited and
+       certified (the "Certification Representation").
+
+16. Each of these representations was false when made.
+
+17. Defendant knew the representations were false at the time it
+    made them, or made them with reckless disregard for their
+    truth.
+
+18. Defendant made the representations with the intent that
+    Plaintiff rely on them in placing the blanket purchase order
+    described in paragraph 11 above.
+
+19. Plaintiff reasonably and justifiably relied on the
+    representations.
+
+20. As a direct and proximate result of Plaintiff's reliance,
+    Plaintiff has suffered damages in an amount to be proven at
+    trial, but believed to exceed $4,200,000, plus interest,
+    costs, and attorneys' fees.
+
+                            PRAYER FOR RELIEF
+
+    WHEREFORE, Plaintiff respectfully prays that this Court enter
+judgment in its favor and against Defendant awarding compensatory
+damages to be proven at trial, punitive damages under [REDACTED
+STATE] common law, pre-judgment and post-judgment interest at the
+maximum rate allowed by law, and such other relief as the Court
+deems just and proper.
+
+Dated: [REDACTED DATE]
+                              Respectfully submitted,
+                              [REDACTED FIRM NAME]
+                              /s/ [REDACTED ATTORNEY NAME]
+                              Attorneys for Plaintiff ACME CORP

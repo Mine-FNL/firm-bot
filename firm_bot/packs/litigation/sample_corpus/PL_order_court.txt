@@ -1,0 +1,107 @@
+UNITED STATES DISTRICT COURT
+DISTRICT OF [REDACTED JURISDICTION]
+
+ACME CORP, a [REDACTED STATE] corporation,
+    Plaintiff,
+    v.                                          Case No. 1:24-cv-00001-ABC
+BETA CORP, a [REDACTED STATE] corporation,
+    Defendant.
+
+ORDER ON DEFENDANT'S MOTION FOR SUMMARY JUDGMENT
+
+    Before the Court is Defendant BETA CORP's Motion for Summary
+Judgment on Count I (Fraud) of the First Amended Complaint. (ECF
+No. 42.) Plaintiff ACME CORP filed an opposition (ECF No. 48) and
+Defendant filed a reply (ECF No. 51). The Court held oral argument
+on [REDACTED DATE]. For the reasons stated below, the Motion is
+GRANTED IN PART and DENIED IN PART.
+
+                          BACKGROUND
+
+1.  Plaintiff brings this action alleging fraud and breach of
+    contract in connection with a five-year Supply Agreement under
+    which Defendant agreed to manufacture and sell specialised
+    titanium alloy fasteners to Plaintiff.
+
+2.  Plaintiff contends that approximately 23% of the delivered
+    fasteners were manufactured at a sub-supplier facility, in
+    breach of the manufacturing-location representation in Article
+    4 of the Agreement.
+
+3.  Plaintiff further contends that the heat-treatment records
+    supplied with the deliveries were fabricated, in breach of
+    the certification representation in Article 7.
+
+                          LEGAL STANDARD
+
+4.  Summary judgment is appropriate where "there is no genuine
+    dispute as to any material fact and the movant is entitled
+    to judgment as a matter of law." Fed. R. Civ. P. 56(a).
+
+5.  The moving party bears the initial burden of identifying the
+    absence of a genuine dispute. Celotex Corp. v. Catrett,
+    477 U.S. 317, 322-23 (1986).
+
+                          DISCUSSION
+
+    I. The economic-loss rule does not bar Count I as a
+       matter of law.
+
+6.  Under [REDACTED STATE] law, the economic-loss rule bars tort
+    recovery only where the plaintiff suffers purely economic
+    damages with no accompanying physical harm or property
+    damage.
+
+7.  Plaintiff alleges that the non-conforming fasteners were
+    incorporated into a sub-assembly that subsequently failed
+    during acceptance testing, destroying a prototype unit
+    valued at approximately $740,000.
+
+8.  Because Plaintiff alleges physical damage to a tangible
+    prototype, the economic-loss rule does not foreclose Count I
+    at this stage.
+
+    II. A genuine dispute exists as to the manufacturing
+        location.
+
+9.  Plaintiff has produced expert testimony (the Reyes Report,
+    Exhibit A) that the volume and cadence of the deliveries
+    exceed the rated capacity of Lines 1 and 2 at the
+    [REDACTED FACILITY] plant.
+
+10. Defendant has produced no contrary evidence on the
+    capacity-of-lines issue.
+
+11. A reasonable trier of fact could find, on the basis of the
+    Reyes Report alone, that not all 38 deliveries could have
+    been produced at the [REDACTED FACILITY] plant.
+
+    III. Plaintiff's fraud claim survives Rule 9(b).
+
+12. The First Amended Complaint identifies the specific
+    representations challenged (Articles 4 and 7), the time
+    period of the alleged fraud, and the quantum of damages.
+
+13. Although Plaintiff does not identify by serial number the
+    specific fasteners produced at the sub-supplier facility,
+    Rule 9(b) requires only that Plaintiff "state with
+    particularity the circumstances constituting fraud," Fed.
+    R. Civ. P. 9(b), and the Complaint does so.
+
+14. Whether the heat-treatment records are inadmissible hearsay
+    is a question of admissibility for trial, not for summary
+    judgment.
+
+                          CONCLUSION
+
+15. For the foregoing reasons, Defendant's Motion for Summary
+    Judgment on Count I is GRANTED IN PART to the extent the
+    Court dismisses Defendant's argument that the economic-loss
+    rule bars Count I as a matter of law, and DENIED IN PART in
+    all other respects.
+
+16. The Court will set a status conference by separate order.
+
+Dated: [REDACTED DATE]
+                              /s/ [REDACTED JUDGE NAME]
+                              United States District Judge

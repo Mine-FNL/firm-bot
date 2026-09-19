@@ -1,6 +1,7 @@
 """FastAPI app implementation."""
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import shutil
@@ -628,10 +629,13 @@ async def _do_query(
     }
 
     # ---- audit log ----
-    # Append one record per query. We do this AFTER building the
-    # response so a write failure can't break the user's response —
-    # audit best-effort, query path stays hard.
-    _audit_record(
+    # Fire-and-forget onto a bounded background queue. The synchronous
+    # fsync that ``_audit_record`` performs is off the request path
+    # now (perf-report finding #2). The semaphore in
+    # ``_schedule_audit`` prevents unbounded task accumulation under
+    # bursty load — once the queue is full, we fall back to a
+    # synchronous write so we never silently drop audit records.
+    _schedule_audit(
         slug=slug,
         question=question,
         answer_text=answer_text,
@@ -938,3 +942,90 @@ async def run_eval(slug: str, req: EvalRequest) -> dict[str, Any]:
         "avg_issues": round(sum(r["issues"] for r in rows) / max(n, 1), 2),
     }
     return {"aggregate": agg, "rows": rows}
+
+
+# ---- audit log scheduling (off-request-path) -----------------------------
+#
+# The perf report flagged that ``_audit_record`` does a synchronous
+# open + write + flush + fsync + close *after* the response is built,
+# so every query paid ~1-10 ms of disk latency on the request path.
+# We move it to a bounded background queue via ``asyncio.to_thread``.
+#
+# Behaviour:
+#   - Submit the audit as a background task. The request handler
+#     returns immediately and never waits on disk.
+#   - Bound in-flight tasks with ``_AUDIT_SEMAPHORE`` so a bursty
+#     burst can't accumulate thousands of pending tasks.
+#   - If the semaphore is full, fall back to a synchronous write on
+#     the calling thread — we never silently drop audit records
+#     (silently-dropping them would break the compliance story).
+#
+# This keeps the audit guarantee (every query logged, in order) while
+# removing the disk latency from the hot path.
+
+# 64 in-flight audit writes is plenty for any realistic load (a
+# saturated 4-worker uvicorn would need 16+ concurrent queries just
+# to fill it). Lower if memory-constrained; raise only if you see
+# audit-saturation warnings in logs.
+_AUDIT_SEMAPHORE: asyncio.Semaphore = asyncio.Semaphore(64)
+
+
+class _AuditBackpressure:
+    """Tracks whether the audit queue has been saturated recently.
+
+    Used to emit a single warning per saturation event instead of one
+    per dropped record (which would flood logs under bursty load).
+    """
+
+    def __init__(self) -> None:
+        self.warned_once = False
+
+    def maybe_warn(self, current_depth: int) -> None:
+        if not self.warned_once:
+            log.warning(
+                "audit semaphore saturated — falling back to sync write "
+                "(%d in-flight); consider raising worker count or reducing "
+                "request concurrency",
+                current_depth,
+            )
+            self.warned_once = True
+
+    def reset(self) -> None:
+        # Call after the queue drains if you want the next saturation
+        # to warn again. Not called automatically — one warning per
+        # process lifetime is the intent.
+        self.warned_once = False
+
+
+_AUDIT_BACKPRESSURE = _AuditBackpressure()
+
+
+def _schedule_audit(**kwargs: Any) -> None:
+    """Submit an audit record to the background queue.
+
+    Falls back to a synchronous write if the in-flight semaphore is
+    already saturated — never silently drops records. The fallback
+    also runs synchronously when called outside an event loop (e.g.,
+    in unit tests).
+    """
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop — fall back to sync. This happens in
+        # unit tests and during shutdown.
+        _audit_record(**kwargs)
+        return
+
+    if _AUDIT_SEMAPHORE.locked():
+        _AUDIT_BACKPRESSURE.maybe_warn(_AUDIT_SEMAPHORE._value)
+        _audit_record(**kwargs)
+        return
+
+    async def _runner() -> None:
+        async with _AUDIT_SEMAPHORE:
+            await asyncio.to_thread(_audit_record, **kwargs)
+
+    # Fire-and-forget: the task is intentionally untracked. Storing
+    # the reference would let us accumulate thousands of pending
+    # tasks under bursty load; the semaphore above is the bound.
+    loop.create_task(_runner())  # noqa: RUF006

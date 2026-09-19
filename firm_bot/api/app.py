@@ -503,6 +503,22 @@ async def query_stream(slug: str, req: StreamQueryRequest) -> StreamingResponse:
         raise HTTPException(409, "firm has no indexed chunks")
 
     embedder = get_embedder(root)
+
+    # Wrap the embed callable so single-element ``embed([question])``
+    # calls — the only ones made on the query path — go through the
+    # query-vector LRU cache. Multi-element calls (ingest path) pass
+    # through untouched so the batched encode path keeps its own
+    # batching behaviour. See firm_bot/api/embed_cache.py for the
+    # cache semantics + eviction policy.
+    def _embed_with_query_cache(texts: list[str]) -> list[list[float]]:
+        if len(texts) == 1:
+            from .embed_cache import cached_query_embedding
+
+            cached_vec: list[float] = cached_query_embedding(texts[0], embedder.embed)
+            return [cached_vec]
+        result: list[list[float]] = embedder.embed(texts)
+        return result
+
     reranker = None
     if root.reranker_model:
         from ..retrieve.rerank import get_reranker
@@ -514,7 +530,7 @@ async def query_stream(slug: str, req: StreamQueryRequest) -> StreamingResponse:
     hits = hybrid_search(
         store=store,
         query=req.question,
-        embed=embedder.embed,
+        embed=_embed_with_query_cache,
         bm25_weight=root.hybrid_bm25_weight,
         dense_weight=root.hybrid_dense_weight,
         k=req.k or root.answer_k,

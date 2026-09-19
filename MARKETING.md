@@ -21,6 +21,11 @@ whichever fits the channel and the audience.
 | [`TWEETS.md`](TWEETS.md)                    | 3 threads, 21 tweets     | Twitter/X — 3 new angle variants beyond the launch thread below |
 | [`PRODUCT_HUNT.md`](PRODUCT_HUNT.md)        | ~1,300 words + 4 themes  | Product Hunt launch copy with maker's comments and reply themes |
 | [`INDIE_HACKERS.md`](INDIE_HACKERS.md)      | ~820 words               | IndieHackers launch post (first-person, building-in-public) |
+| [`OUTREACH.md`](OUTREACH.md)                | 3 templates              | Cold email outreach to compliance officers, KM leads, IT/DevOps |
+| [`INVESTORS.md`](INVESTORS.md)              | ~1,800 words             | Investor one-pager — problem, product, market, ask, contact |
+
+**Live landing page at [firm-bot.vercel.app](https://firm-bot.vercel.app)**
+showcases every artifact above with an embedded interactive chat demo.
 
 The whitepaper is the canonical reference. The Dev.to and blog
 articles distill it for the engineering reader. The tweet threads,

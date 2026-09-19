@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>firm-bot — Local-first RAG for legal & audit work</title>
+  <meta name="description" content="A citation-required, local-first RAG chatbot builder for professional services firms that can't use cloud RAG for compliance reasons. MIT-licensed, runs entirely on your hardware.">
+  <link rel="icon" href="/static/hero.png" type="image/png">
+  <meta property="og:title" content="firm-bot — Local-first RAG for legal & audit work">
+  <meta property="og:description" content="Citation-required, local-first RAG chatbot builder for professional services firms. MIT-licensed open source. No cloud calls. No vendor on the chain of custody.">
+  <meta property="og:image" content="/static/social-preview.png">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --bg-soft: #111726;
+      --bg-card: #182035;
+      --border: #2a3450;
+      --text: #e8ecf3;
+      --text-muted: #98a2b6;
+      --accent: #7c5cff;
+      --accent-soft: #a78bfa;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --red: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: var(--accent-soft); text-decoration: none; }
+    a:hover { color: var(--text); }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+
+    .nav {
+      position: sticky; top: 0;
+      background: rgba(10, 14, 26, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 18px;
+      color: var(--text);
+    }
+    .nav-brand img { width: 32px; height: 32px; border-radius: 6px; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--text-muted); font-weight: 500; font-size: 14px; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600; font-size: 14px;
+    }
+    .nav-cta:hover { background: var(--accent-soft); color: white; }
+
+    .hero {
+      max-width: 1200px; margin: 0 auto;
+      padding: 80px 32px 64px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(124, 92, 255, 0.1);
+      color: var(--accent-soft);
+      border: 1px solid rgba(124, 92, 255, 0.3);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 13px; font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+    }
+    .hero h1 .accent {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 40px;
+    }
+    .hero-cta {
+      display: flex; gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-weight: 600; font-size: 16px;
+      transition: all 0.15s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--accent-soft); }
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--bg-soft); border-color: var(--accent); }
+    .hero-install {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      max-width: 700px;
+      margin: 0 auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      display: flex; align-items: center; gap: 12px;
+      flex-wrap: wrap;
+    }
+    .hero-install .label { color: var(--text-muted); font-size: 12px; }
+    .hero-install code {
+      background: var(--bg);
+      padding: 6px 10px;
+      border-radius: 6px;
+      flex: 1;
+      min-width: 0;
+      overflow-x: auto;
+    }
+    .hero-install .copy {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .hero-install .copy:hover { background: var(--accent-soft); }
+
+    .video-row {
+      max-width: 1200px;
+      margin: 0 auto 80px;
+      padding: 0 32px;
+    }
+    .video-row video {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 30px 60px -20px rgba(124, 92, 255, 0.3);
+    }
+
+    .section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 64px 32px;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .section-header h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .section-header p {
+      color: var(--text-muted);
+      font-size: 18px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      transition: border-color 0.15s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card .icon {
+      display: inline-flex;
+      background: rgba(124, 92, 255, 0.1);
+      color: var(--accent-soft);
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+    .card h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .card p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .img-section {
+      max-width: 1200px;
+      margin: 0 auto 64px;
+      padding: 0 32px;
+    }
+    .img-section img {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    .img-caption {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    .benchmark-table {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .benchmark-table table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 14px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      background: var(--bg-soft);
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .benchmark-table td.num {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+    }
+    .benchmark-table tr:last-child td { border-bottom: none; }
+
+    .chat-section {
+      max-width: 1000px;
+      margin: 0 auto 80px;
+      padding: 0 32px;
+    }
+    .chat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .chat-header {
+      padding: 16px 24px;
+      background: var(--bg-soft);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .chat-header img { width: 24px; height: 24px; border-radius: 4px; }
+    .chat-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .chat-header .tag {
+      background: var(--green);
+      color: black;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .chat-messages {
+      padding: 24px;
+      max-height: 480px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .msg {
+      max-width: 85%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .msg.user {
+      background: var(--accent);
+      color: white;
+      align-self: flex-end;
+    }
+    .msg.assistant {
+      background: var(--bg-soft);
+      align-self: flex-start;
+      border: 1px solid var(--border);
+    }
+    .msg.assistant .citation {
+      display: inline-block;
+      background: rgba(124, 92, 255, 0.15);
+      color: var(--accent-soft);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      margin: 0 1px;
+    }
+    .chat-input {
+      display: flex;
+      gap: 8px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-soft);
+    }
+    .chat-input input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .chat-input input:focus { outline: none; border-color: var(--accent); }
+    .chat-input button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .chat-input button:hover { background: var(--accent-soft); }
+    .chat-hint {
+      padding: 8px 24px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      background: var(--bg-soft);
+    }
+
+    .cta-banner {
+      max-width: 1000px;
+      margin: 0 auto 80px;
+      padding: 48px 32px;
+      background: linear-gradient(135deg, rgba(124, 92, 255, 0.15), rgba(167, 139, 250, 0.05));
+      border: 1px solid rgba(124, 92, 255, 0.3);
+      border-radius: 16px;
+      text-align: center;
+    }
+    .cta-banner h2 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .cta-banner p {
+      color: var(--text-muted);
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+
+    .footer {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 32px 32px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .footer a { color: var(--text-muted); }
+    .footer a:hover { color: var(--text); }
+
+    @media (max-width: 720px) {
+      .nav-links a:not(.nav-cta) { display: none; }
+      .hero { padding: 48px 24px 32px; }
+      .section, .video-row, .img-section, .chat-section {
+        padding-left: 24px; padding-right: 24px;
+      }
+      .hero-install {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
+        <img src="/static/hero.png" alt="firm-bot logo">
+        firm-bot
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#benchmark">Benchmark</a>
+        <a href="#demo">Live demo</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/Mine-FNL/firm-bot" target="_blank">GitHub ★</a>
+        <a href="https://github.com/Mine-FNL/firm-bot" class="nav-cta">Star on GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-badge">MIT-licensed · open source · runs on your laptop</div>
+    <h1>The RAG chatbot <span class="accent">that doesn't touch the cloud</span>.</h1>
+    <p>firm-bot is a citation-required, local-first RAG builder for legal, audit, and consultancy firms that can't send privileged material to someone else's vector store. MIT-licensed. No vendor on the chain of custody.</p>
+    <div class="hero-cta">
+      <a href="https://github.com/Mine-FNL/firm-bot" class="btn btn-primary">View on GitHub →</a>
+      <a href="#install" class="btn btn-secondary">Install (3 commands)</a>
+    </div>
+    <div class="hero-install" id="install">
+      <span class="label">$</span>
+      <code id="install-cmd">pip install --extra-index-url https://mine-fnl.github.io/firm-bot/simple/ firm-bot</code>
+      <button class="copy" onclick="copyInstall(event)">Copy</button>
+    </div>
+  </section>
+
+  <div class="video-row">
+    <video autoplay muted loop playsinline poster="/static/hero.png">
+      <source src="/static/real-demo-recording.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <section class="img-section">
+    <img src="/static/architecture.png" alt="firm-bot architecture: six-stage pipeline from PDF ingest to citation-required answer">
+    <div class="img-caption">Six-stage pipeline: Ingest → Chunk → Embed → Retrieve → Answer → Guard</div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="section-header">
+      <h2>Built for compliance reviews</h2>
+      <p>Every design choice answers the question your SOC 2 auditor or vendor-risk team will ask.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">📜</div>
+        <h3>Citation-required</h3>
+        <p>Every claim anchored to <code style="font-size:12px">[file:page]</code>. An LLM-as-judge flags ungrounded answers. No silent fabrication.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔌</div>
+        <h3>Local-first</h3>
+        <p>No cloud calls during operation. Ollama + sentence-transformers + Chroma all run on your hardware. Network egress = zero.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🧱</div>
+        <h3>Structure-aware chunker</h3>
+        <p>Recognises Article §, Section, Title Case, ALL CAPS, WHEREAS preambles. Sections stay intact under the merge step.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🛡️</div>
+        <h3>STRIDE threat model</h3>
+        <p>Published in <code>SECURITY.md</code>. Per-IP rate limit, body cap, CORS allow-list, audit log — every control documented.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📒</div>
+        <h3>Query audit log</h3>
+        <p>Append-only JSONL per firm with retention. Never logs the question or answer text — only their SHA-256 hashes. SIEM-friendly.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔑</div>
+        <h3>Optional API key auth</h3>
+        <p>Opt-in shared-secret gate. Bearer / X-API-Key headers. Exempts <code>/healthz</code> + <code>/metrics</code> + UI for monitoring.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="benchmark">
+    <div class="section-header">
+      <h2>Real benchmarks, reproducible from one command</h2>
+      <p>30-contract curated corpus · 59 questions · Apple M4 · all-MiniLM-L6-v2</p>
+    </div>
+    <div class="benchmark-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Chunker</th>
+            <th>precision@k</th>
+            <th>keyword coverage</th>
+            <th>p50</th>
+            <th>p95</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>firm-bot</strong> (structure-aware)</td>
+            <td class="num">0.627</td>
+            <td class="num">0.605</td>
+            <td class="num">3.6 ms</td>
+            <td class="num">4.9 ms</td>
+          </tr>
+          <tr>
+            <td>naive (sliding window)</td>
+            <td class="num">0.610</td>
+            <td class="num">0.619</td>
+            <td class="num">3.3 ms</td>
+            <td class="num">3.5 ms</td>
+          </tr>
+          <tr>
+            <td>firm-bot + reranker</td>
+            <td class="num">0.627</td>
+            <td class="num">0.605</td>
+            <td class="num">16 ms</td>
+            <td class="num">96.9 ms</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:16px;">
+      Reproduce with <code style="background:var(--bg-soft); padding:2px 6px; border-radius:4px;">make bench-compare</code>.
+      CI auto-fails if precision@k regresses &gt; 5pp vs the committed snapshot.
+    </p>
+  </section>
+
+  <section class="img-section">
+    <img src="/static/comparison.png" alt="Comparison: firm-bot vs Harvey, Spellbook, Glean, ChatGPT Enterprise on cost and privacy">
+    <div class="img-caption">Why local-first wins for legal &amp; audit work</div>
+  </section>
+
+  <section class="section" id="demo">
+    <div class="section-header">
+      <h2>Try a sample interaction</h2>
+      <p>Canned responses from a real firm-bot session with the demo corpus. The full system runs locally; this page is a static preview.</p>
+    </div>
+  </section>
+
+  <section class="chat-section">
+    <div class="chat-card">
+      <div class="chat-header">
+        <img src="/static/hero.png" alt="firm-bot">
+        <h3>Demo LLP</h3>
+        <span class="tag">live preview</span>
+      </div>
+      <div class="chat-messages" id="chat">
+        <div class="msg assistant">Sample questions you can try: "What's the cap on liability in the MSA?", "How long does the NDA last?", "What are the hourly rates?"</div>
+      </div>
+      <form class="chat-input" id="chat-form">
+        <input type="text" id="chat-input" placeholder="Ask a question…" autocomplete="off">
+        <button type="submit">Ask</button>
+      </form>
+      <div class="chat-hint">This is a static demo. For a real backend, run <code style="background:var(--bg);padding:2px 6px;border-radius:4px;">firm-bot serve</code> locally.</div>
+    </div>
+  </section>
+
+  <section class="img-section">
+    <img src="/static/benchmark.png" alt="Benchmark bar chart: firm-bot vs naive vs rerank">
+    <div class="img-caption">precision@k on CUAD subset: 0.538 (firm-bot) vs 0.462 (naive sliding window)</div>
+  </section>
+
+  <div class="cta-banner">
+    <h2>Three commands from clone to running.</h2>
+    <p>Auto-pulls the Ollama model on first boot. Bundled sample firm. No cloud calls.</p>
+    <div class="hero-cta" style="margin-bottom:0;">
+      <a href="https://github.com/Mine-FNL/firm-bot" class="btn btn-primary">View on GitHub →</a>
+      <a href="#install" class="btn btn-secondary">Install (3 commands)</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>
+      <strong>firm-bot</strong> · MIT-licensed open source ·
+      <a href="https://github.com/Mine-FNL/firm-bot">github.com/Mine-FNL/firm-bot</a> ·
+      <a href="/static/social-preview.png">social preview</a> ·
+      built by <a href="https://github.com/Mine-FNL">Mine-FNL</a>
+    </p>
+  </footer>
+
+  <script>
+    // Static chat demo with canned responses from a real firm-bot session
+    const SAMPLE_ANSWERS = {
+      "what's the cap on liability in the msa?": {
+        text: "The cap on liability in the Acme MSA is set at the fees paid by Acme Corp to Demo LLP in the twelve (12) months preceding the event giving rise to the claim.",
+        sources: [
+          { file: "acme_msa.pdf", page: 1, score: 0.0164 },
+          { file: "acme_msa.pdf", page: 1, score: 0.0089 },
+          { file: "acme_msa.pdf", page: 1, score: 0.0087 },
+          { file: "nda.pdf",     page: 1, score: 0.0085 },
+        ]
+      },
+      "how long does the nda's confidentiality last?": {
+        text: "The NDA's confidentiality obligations last for five (5) years from the date of disclosure, with trade secrets protected for as long as they remain trade secrets under applicable law.",
+        sources: [
+          { file: "nda.pdf", page: 1, score: 0.0152 },
+          { file: "nda.pdf", page: 1, score: 0.0091 },
+          { file: "acme_msa.pdf", page: 1, score: 0.0078 },
+        ]
+      },
+      "what are the hourly rates?": {
+        text: "Hourly rates: Senior Partner $650/hour, Partner $475/hour, Senior Associate $325/hour.",
+        sources: [
+          { file: "acme_msa.pdf", page: 1, score: 0.0141 },
+        ]
+      },
+    };
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function addUserMsg(text) {
+      const m = document.createElement("div");
+      m.className = "msg user";
+      m.textContent = text;
+      document.getElementById("chat").appendChild(m);
+    }
+
+    function addAssistantMsg(payload) {
+      const m = document.createElement("div");
+      m.className = "msg assistant";
+      let html = escapeHtml(payload.text);
+      payload.sources.forEach(s => {
+        const tag = `[${s.file}:p.${s.page}]`;
+        html += ` <span class="citation">${escapeHtml(tag)}</span>`;
+      });
+      m.innerHTML = html;
+      const c = document.getElementById("chat");
+      c.appendChild(m);
+      c.scrollTop = c.scrollHeight;
+    }
+
+    document.getElementById("chat-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const input = document.getElementById("chat-input");
+      const q = input.value.trim();
+      if (!q) return;
+      addUserMsg(q);
+      input.value = "";
+      const key = q.toLowerCase().replace(/[^\w\s']/g, "").trim();
+      const answer = SAMPLE_ANSWERS[key] || {
+        text: "I don't know — no relevant chunks were retrieved. (Static demo: only three sample questions have canned answers. Run `firm-bot serve` locally for a real backend.)",
+        sources: []
+      };
+      setTimeout(() => addAssistantMsg(answer), 400);
+    });
+
+    function copyInstall(ev) {
+      const text = document.getElementById("install-cmd").textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = ev.target;
+        const orig = btn.textContent;
+        btn.textContent = "Copied ✓";
+        setTimeout(() => btn.textContent = orig, 1500);
+      });
+    }
+  </script>
+</body>
+</html>

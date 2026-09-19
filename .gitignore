@@ -44,3 +44,4 @@ tests/fixtures/private/
 site/
 .tox/
 .nox/
+.vercel

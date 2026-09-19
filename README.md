@@ -148,6 +148,14 @@ first `firm-bot serve` Just Works.
 Disable with `FIRM_BOT_AUTO_PULL_MODEL=0` if you want to control
 model fetches separately (e.g., on air-gapped networks).
 
+## Live marketing site
+
+A static marketing site is deployed at **[firm-bot.vercel.app](https://firm-bot.vercel.app)** —
+landing page with hero, benchmark table, embedded interactive chat
+demo (canned responses from a real firm-bot session), and links to
+every artifact in `MARKETING.md`. The site is in `web/index.html`
+and `web/static/` — fully static, deployable to any static host.
+
 ## Quick commands (Makefile)
 
 A `Makefile` ships with the project for the common workflows:

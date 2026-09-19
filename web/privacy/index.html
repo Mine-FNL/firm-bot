@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy — firm-bot</title>
+  <meta name="description" content="firm-bot privacy policy: local-first architecture, what the audit log records, retention, and zero telemetry.">
+  <link rel="icon" href="/static/hero.png" type="image/png">
+  <link rel="canonical" href="https://firm-bot.vercel.app/privacy">
+  <meta property="og:title" content="Privacy — firm-bot">
+  <meta property="og:description" content="firm-bot is local-first. No cloud calls during operation, no telemetry, no analytics. Your documents never leave your machine.">
+  <meta property="og:type" content="article">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/site.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
+        <img src="/static/hero.png" alt="firm-bot logo">
+        firm-bot
+      </a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/terms">Terms</a>
+        <a href="https://github.com/Mine-FNL/firm-bot" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="doc">
+    <h1>Privacy policy</h1>
+    <p class="updated">Last updated: September 2026</p>
+
+    <h2>Short version</h2>
+    <p>
+      firm-bot runs entirely on your own hardware. Your documents, questions, and
+      answers do not leave your machine. We collect no telemetry, run no analytics,
+      and load no third-party tracking scripts. The only network calls firm-bot makes
+      are the ones you explicitly configure (for example, pulling a model from Ollama
+      on first boot, or installing dependencies with <code>pip</code>).
+    </p>
+
+    <h2>Local-first architecture</h2>
+    <p>
+      firm-bot is designed so that operating the system does not require contacting
+      any third party. The retrieval pipeline (chunking, embedding, vector search,
+      generation) runs locally using Ollama, sentence-transformers, and Chroma. There
+      is no embedded analytics SDK, no usage beacon, no remote logging, and no
+      "phone-home" check-in. If you want firm-bot to be reachable from another device
+      on your network, you opt in by binding to a non-loopback address; that traffic
+      never leaves your LAN.
+    </p>
+
+    <h2>What the audit log records</h2>
+    <p>
+      firm-bot writes an append-only JSONL audit log per firm so that your compliance
+      or security team can review who asked what, when, and against which document
+      version. To make the log SIEM-friendly without leaking privileged content, only
+      metadata is recorded:
+    </p>
+    <ul>
+      <li>Timestamp (UTC) and request ID</li>
+      <li>SHA-256 hash of the question text — never the question itself</li>
+      <li>SHA-256 hash of the answer text — never the answer itself</li>
+      <li>Citation count, retrieval latency, model name and version</li>
+      <li>Client IP, user-agent, and API key identifier (when auth is enabled)</li>
+      <li>Guard verdict (grounded / ungrounded / refused) from the LLM-as-judge</li>
+    </ul>
+    <p>
+      Question and answer bodies are <strong>never</strong> stored in the audit log.
+      This is a deliberate choice: the audit log proves that a query happened and
+      what model was involved, but cannot itself become a copy of the privileged
+      material.
+    </p>
+
+    <h2>Retention</h2>
+    <p>
+      The default retention window is <strong>90 days</strong>. Audit entries older
+      than that are pruned on a rolling basis by the server process. Retention is
+      configurable via the <code>FIRM_BOT_AUDIT_RETENTION_DAYS</code> environment
+      variable; set it to <code>0</code> to disable audit logging entirely.
+    </p>
+
+    <h2>No analytics, no telemetry, no third-party scripts</h2>
+    <p>
+      The firm-bot source contains no analytics SDKs and no telemetry calls. This
+      website loads exactly one external resource beyond its own static assets: the
+      Inter and JetBrains Mono web fonts from Google Fonts. Font requests are
+      anonymous at the protocol level (no cookies are set for plain font CSS), and
+      the request carries only the user agent and referrer that any HTTP request
+      inherently transmits. No analytics scripts, ad networks, or session trackers
+      are loaded on this site or in the firm-bot binary.
+    </p>
+
+    <h2>License</h2>
+    <p>
+      firm-bot is MIT-licensed open source. The license grants you the right to
+      inspect, modify, and self-host the entire codebase. See the
+      <a href="https://opensource.org/licenses/MIT">MIT license text</a> and the
+      <a href="https://github.com/Mine-FNL/firm-bot/blob/main/LICENSE">LICENSE
+      file in the repository</a>.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Questions, concerns, or vulnerability reports should be filed as a GitHub
+      issue at
+      <a href="https://github.com/Mine-FNL/firm-bot/issues">github.com/Mine-FNL/firm-bot/issues</a>.
+      For security issues, please follow the disclosure process in <code>SECURITY.md</code>
+      in the repository rather than filing a public issue.
+    </p>
+
+    <a href="/" class="back">← Back to firm-bot</a>
+  </main>
+
+  <footer class="footer">
+    <p>
+      <strong>firm-bot</strong> · MIT-licensed open source ·
+      <a href="https://github.com/Mine-FNL/firm-bot">github.com/Mine-FNL/firm-bot</a> ·
+      built by <a href="https://github.com/Mine-FNL">Mine-FNL</a>
+    </p>
+  </footer>
+</body>
+</html>

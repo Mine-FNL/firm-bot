@@ -1,0 +1,135 @@
+/* Shared tokens + base styles for firm-bot site pages (privacy, terms).
+   Mirrors the :root tokens from index.html so every page looks the same. */
+
+:root {
+  --bg: #0a0e1a;
+  --bg-soft: #111726;
+  --bg-card: #182035;
+  --border: #2a3450;
+  --text: #e8ecf3;
+  --text-muted: #98a2b6;
+  --accent: #7c5cff;
+  --accent-soft: #a78bfa;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --red: #ef4444;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: var(--accent-soft); text-decoration: none; }
+a:hover { color: var(--text); }
+code, pre { font-family: 'JetBrains Mono', monospace; }
+
+/* Minimal nav so the new pages feel like part of the site. */
+.nav {
+  position: sticky; top: 0;
+  background: rgba(10, 14, 26, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+.nav-inner {
+  max-width: 900px; margin: 0 auto;
+  padding: 16px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 18px;
+  color: var(--text);
+}
+.nav-brand img { width: 32px; height: 32px; border-radius: 6px; }
+.nav-links { display: flex; gap: 24px; align-items: center; }
+.nav-links a { color: var(--text-muted); font-weight: 500; font-size: 14px; }
+.nav-links a:hover { color: var(--text); }
+
+/* Document layout for legal pages. */
+.doc {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 64px 32px 48px;
+  flex: 1;
+}
+.doc h1 {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.doc .updated {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 40px;
+}
+.doc h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 40px;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+.doc h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  color: var(--accent-soft);
+}
+.doc p {
+  color: var(--text);
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+.doc ul {
+  margin: 0 0 16px 0;
+  padding-left: 20px;
+  color: var(--text);
+}
+.doc li {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+.doc li code {
+  background: var(--bg-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+}
+.doc .back {
+  display: inline-block;
+  margin-top: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.doc .back:hover { color: var(--accent-soft); }
+
+.footer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.footer a { color: var(--text-muted); }
+.footer a:hover { color: var(--text); }
+
+@media (max-width: 720px) {
+  .nav-inner { padding: 16px 24px; }
+  .nav-links a:not(.nav-cta) { display: none; }
+  .doc { padding: 48px 24px 32px; }
+}

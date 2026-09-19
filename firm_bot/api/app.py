@@ -375,10 +375,99 @@ class StreamQueryRequest(BaseModel):
     k: int | None = None
 
 
+class BulkQueryItem(BaseModel):
+    """One row in a bulk-query request."""
+
+    question: str
+    history: list[dict[str, str]] | None = None
+    run_guard: bool = True
+    k: int | None = None
+    # Optional client-supplied id so callers can correlate results
+    # without re-parsing the question text.
+    id: str | None = None
+
+
+class BulkQueryRequest(BaseModel):
+    """Submit up to N questions in one HTTP round-trip.
+
+    Concurrency is capped at ``max_concurrency`` (default 4) to avoid
+    stampeding the Ollama server. The response preserves input order
+    and pairs each answer with its ``id`` field if the caller provided
+    one.
+    """
+
+    items: list[BulkQueryItem]
+    max_concurrency: int = 4
+
+
 @app.post("/v1/firms/{slug}/query")
 async def query(slug: str, req: QueryRequest) -> dict[str, Any]:
     """Non-streaming query. Returns the full answer + citation guard results."""
     return await _do_query(slug, req.question, req.history, req.k, req.run_guard)
+
+
+@app.post("/v1/firms/{slug}/query/bulk")
+async def query_bulk(slug: str, req: BulkQueryRequest) -> dict[str, Any]:
+    """Submit a batch of questions and get back a parallel-bounded list of answers.
+
+    Concurrency is capped at ``min(len(items), max_concurrency)`` to
+    avoid stampeding the local Ollama server. Items run as separate
+    ``asyncio`` tasks; each calls ``_do_query`` so the audit-log +
+    injection-scan + stage-timer paths all apply per-item.
+
+    The response shape mirrors the input order:
+
+    .. code-block:: json
+
+        {
+          "results": [
+            {"id": "...", "ok": true, "response": {...}},
+            {"id": "...", "ok": false, "error": "..."}
+          ],
+          "stats": {"total": N, "succeeded": M, "failed": K, "elapsed_ms": ...}
+        }
+
+    Failed items do NOT abort the batch — each item is wrapped in a
+    try/except so one malformed question can't kill the whole request.
+    """
+    import time as _time
+
+    if not req.items:
+        return {
+            "results": [],
+            "stats": {"total": 0, "succeeded": 0, "failed": 0, "elapsed_ms": 0.0},
+        }
+    if len(req.items) > 100:
+        # Hard cap to prevent OOM / accidentally massive requests.
+        raise HTTPException(400, f"bulk query limited to 100 items, got {len(req.items)}")
+    concurrency = max(1, min(len(req.items), req.max_concurrency))
+    sem = asyncio.Semaphore(concurrency)
+
+    t_start = _time.perf_counter()
+
+    async def _run_one(item: BulkQueryItem) -> dict[str, Any]:
+        async with sem:
+            try:
+                resp = await _do_query(slug, item.question, item.history, item.k, item.run_guard)
+                return {"id": item.id, "ok": True, "response": resp}
+            except HTTPException as e:
+                return {"id": item.id, "ok": False, "error": str(e.detail), "status_code": e.status_code}
+            except Exception as e:  # pragma: no cover - defensive
+                log.warning("bulk query item failed: %s", e)
+                return {"id": item.id, "ok": False, "error": f"{type(e).__name__}: {e}"}
+
+    results = await asyncio.gather(*[_run_one(it) for it in req.items])
+    succeeded = sum(1 for r in results if r["ok"])
+    return {
+        "results": results,
+        "stats": {
+            "total": len(results),
+            "succeeded": succeeded,
+            "failed": len(results) - succeeded,
+            "elapsed_ms": round((_time.perf_counter() - t_start) * 1000, 2),
+            "concurrency": concurrency,
+        },
+    }
 
 
 @app.post("/v1/firms/{slug}/query/stream")

@@ -139,3 +139,131 @@ def test_stream_query_endpoint(client: TestClient, sample_pdf: Path) -> None:
         # the meta + done framing).
         assert "meta" in events
         assert "done" in events
+
+
+# ---- bulk query endpoint -------------------------------------------------
+
+
+def test_bulk_query_returns_results_for_each_item(
+    client: TestClient, sample_pdf: Path
+) -> None:
+    """A bulk request returns one result per input item, in order."""
+    client.post("/v1/firms", json={"slug": "demo", "name": "Demo LLP"})
+    with sample_pdf.open("rb") as f:
+        client.post(
+            "/v1/firms/demo/upload",
+            files={"file": (sample_pdf.name, f, "application/pdf")},
+        )
+    client.post("/v1/firms/demo/ingest")
+
+    r = client.post(
+        "/v1/firms/demo/query/bulk",
+        json={
+            "items": [
+                {"id": "q1", "question": "what is the liability cap?", "run_guard": False},
+                {"id": "q2", "question": "what is the term?", "run_guard": False},
+                {"id": "q3", "question": "who are the parties?", "run_guard": False},
+            ],
+            "max_concurrency": 2,
+        },
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["stats"]["total"] == 3
+    assert body["stats"]["succeeded"] == 3
+    assert body["stats"]["failed"] == 0
+    assert body["stats"]["concurrency"] == 2
+    # Order preserved
+    ids = [item["id"] for item in body["results"]]
+    assert ids == ["q1", "q2", "q3"]
+    # Each item has a response payload
+    for item in body["results"]:
+        assert item["ok"] is True
+        assert "answer" in item["response"]
+
+
+def test_bulk_query_empty_items_returns_empty_result(client: TestClient) -> None:
+    """An empty items list returns a 200 with empty results."""
+    client.post("/v1/firms", json={"slug": "demo", "name": "Demo LLP"})
+    r = client.post("/v1/firms/demo/query/bulk", json={"items": []})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["results"] == []
+    assert body["stats"]["total"] == 0
+
+
+def test_bulk_query_too_many_items_returns_400(client: TestClient) -> None:
+    """More than 100 items is rejected with 400."""
+    client.post("/v1/firms", json={"slug": "demo", "name": "Demo LLP"})
+    items = [{"question": f"q{i}"} for i in range(101)]
+    r = client.post("/v1/firms/demo/query/bulk", json={"items": items})
+    assert r.status_code == 400
+
+
+def test_bulk_query_isolates_per_item_failures(client: TestClient) -> None:
+    """A failure on one item doesn't kill the batch — other items succeed."""
+    client.post("/v1/firms", json={"slug": "demo", "name": "Demo LLP"})
+    # Note: no ingest, so all queries will return 409 — every item
+    # reports failure, but the batch itself returns 200 (not 500).
+    r = client.post(
+        "/v1/firms/demo/query/bulk",
+        json={
+            "items": [
+                {"id": "a", "question": "q1", "run_guard": False},
+                {"id": "b", "question": "q2", "run_guard": False},
+            ]
+        },
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["stats"]["total"] == 2
+    assert body["stats"]["failed"] == 2
+    # Each failure carries an error string + the original HTTP status
+    for item in body["results"]:
+        assert item["ok"] is False
+        assert item["status_code"] == 409
+        assert "no indexed chunks" in item["error"].lower()
+
+
+def test_bulk_query_with_run_guard_false_skips_guard(client: TestClient, sample_pdf: Path) -> None:
+    """run_guard=False is honoured per item."""
+    client.post("/v1/firms", json={"slug": "demo", "name": "Demo LLP"})
+    with sample_pdf.open("rb") as f:
+        client.post(
+            "/v1/firms/demo/upload",
+            files={"file": (sample_pdf.name, f, "application/pdf")},
+        )
+    client.post("/v1/firms/demo/ingest")
+    r = client.post(
+        "/v1/firms/demo/query/bulk",
+        json={
+            "items": [
+                {"id": "no-guard", "question": "what is the liability cap?", "run_guard": False},
+            ],
+        },
+    )
+    body = r.json()
+    assert body["results"][0]["response"]["judge_model"] is None
+
+
+def test_bulk_query_preserves_client_supplied_ids(client: TestClient, sample_pdf: Path) -> None:
+    """The ``id`` field on each item is echoed back unchanged."""
+    client.post("/v1/firms", json={"slug": "demo", "name": "Demo LLP"})
+    with sample_pdf.open("rb") as f:
+        client.post(
+            "/v1/firms/demo/upload",
+            files={"file": (sample_pdf.name, f, "application/pdf")},
+        )
+    client.post("/v1/firms/demo/ingest")
+    r = client.post(
+        "/v1/firms/demo/query/bulk",
+        json={
+            "items": [
+                {"id": "client-uuid-1", "question": "cap?", "run_guard": False},
+                {"id": "client-uuid-2", "question": "term?", "run_guard": False},
+            ]
+        },
+    )
+    body = r.json()
+    assert body["results"][0]["id"] == "client-uuid-1"
+    assert body["results"][1]["id"] == "client-uuid-2"

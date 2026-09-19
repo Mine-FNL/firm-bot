@@ -18,6 +18,7 @@ Fixture format
       ]
     }
 """
+
 from __future__ import annotations
 
 from .harness import run

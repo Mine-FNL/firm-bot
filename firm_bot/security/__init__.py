@@ -23,6 +23,7 @@ Design constraints
   its own patterns, so they share regex constants rather than Python
   imports.
 """
+
 from __future__ import annotations
 
 from .middleware import SecurityMiddleware

@@ -13,6 +13,7 @@ The pull is best-effort: if the Ollama daemon is unreachable, we log
 a warning but don't fail startup. The query path surfaces the real
 error when the user asks a question, so this is safe.
 """
+
 from __future__ import annotations
 
 import json
@@ -66,9 +67,7 @@ def is_model_pulled(host: str, model: str, timeout_s: float = 5.0) -> bool:
         inst_tag = name.split(":", maxsplit=1)[1] if inst_has_tag else ""
         if not req_has_tag and inst_family == req_family:
             return True
-        if req_has_tag and inst_family == req_family and (
-            inst_tag == req_tag or not inst_has_tag
-        ):
+        if req_has_tag and inst_family == req_family and (inst_tag == req_tag or not inst_has_tag):
             return True
     return False
 

@@ -11,6 +11,7 @@ Behaviour pinned here:
     falls back to sync. The fallback path is recorded so a warning
     fires once per saturation event.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -19,11 +20,11 @@ from pathlib import Path
 
 import pytest
 
-from firm_bot.audit_log import read_audit_log
 from firm_bot.api.app import (
     _AUDIT_BACKPRESSURE,
     _schedule_audit,
 )
+from firm_bot.audit_log import read_audit_log
 
 
 def _audit_path(tmp_path: Path) -> Path:
@@ -64,7 +65,9 @@ def test_schedule_audit_sync_when_no_loop(tmp_path: Path, monkeypatch: pytest.Mo
     assert records[0].question_len_chars == len("what is the cap?")
 
 
-def test_schedule_audit_async_inside_running_loop(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_schedule_audit_async_inside_running_loop(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Inside a running loop, the write happens on a background task."""
     monkeypatch.setenv("FIRM_BOT_DATA_DIR", str(tmp_path))
 
@@ -82,7 +85,9 @@ def test_schedule_audit_async_inside_running_loop(tmp_path: Path, monkeypatch: p
     asyncio.run(_run())
 
 
-def test_schedule_audit_does_not_block_caller(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_schedule_audit_does_not_block_caller(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """The caller of ``_schedule_audit`` returns without waiting on disk."""
     import time
 
@@ -96,7 +101,9 @@ def test_schedule_audit_does_not_block_caller(tmp_path: Path, monkeypatch: pytes
     assert elapsed < 0.05
 
 
-def test_backpressure_tracks_once_per_saturation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_backpressure_tracks_once_per_saturation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """The backpressure warning is emitted once, not per call.
 
     Must call ``_schedule_audit`` from inside a running event loop —
@@ -134,7 +141,9 @@ def test_backpressure_tracks_once_per_saturation(tmp_path: Path, monkeypatch: py
         app_mod._AUDIT_SEMAPHORE = original  # type: ignore[attr-defined]
 
 
-def test_schedule_audit_writes_correct_record_shape(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_schedule_audit_writes_correct_record_shape(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """The new fields (injection_hits, injection_patterns) flow through."""
     monkeypatch.setenv("FIRM_BOT_DATA_DIR", str(tmp_path))
     kwargs = _kwargs(tmp_path)  # type: ignore[arg-type]

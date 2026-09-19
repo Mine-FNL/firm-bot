@@ -11,6 +11,7 @@ Every extractor returns ``list[Document]`` where each ``Document`` carries:
 - ``text`` — the extracted text
 - ``metadata`` — provenance (path, page, message-id, etc.)
 """
+
 from __future__ import annotations
 
 from .common import Document, IngestStats, dispatch

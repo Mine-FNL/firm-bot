@@ -1,4 +1,5 @@
 """Tests for `firm-bot demo init` — bundled sample firm bootstrap."""
+
 from __future__ import annotations
 
 import json

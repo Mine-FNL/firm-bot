@@ -8,6 +8,7 @@ Three modules under test:
 
 Coverage targets each module's public API.
 """
+
 from __future__ import annotations
 
 import io
@@ -217,9 +218,7 @@ class _CallCounter:
                 "headers": [(b"content-type", b"text/plain")],
             }
         )
-        await send(
-            {"type": "http.response.body", "body": self.body, "more_body": False}
-        )
+        await send({"type": "http.response.body", "body": self.body, "more_body": False})
 
 
 class TestSecurityMiddleware:
@@ -333,9 +332,7 @@ class TestSecurityMiddleware:
 
         headers = dict(starts[0]["headers"])
         assert headers[b"access-control-allow-origin"] is not None
-        acao = next(
-            v for (k, v) in starts[0]["headers"] if k == b"access-control-allow-origin"
-        )
+        acao = next(v for (k, v) in starts[0]["headers"] if k == b"access-control-allow-origin")
         assert acao == b"https://app.example.com"
 
     @pytest.mark.asyncio
@@ -396,9 +393,7 @@ class TestSecurityMiddleware:
         )
         await mw(scope, receive, send)
         starts = [m for m in responses if m["type"] == "http.response.start"]
-        acao = next(
-            v for (k, v) in starts[0]["headers"] if k == b"access-control-allow-origin"
-        )
+        acao = next(v for (k, v) in starts[0]["headers"] if k == b"access-control-allow-origin")
         assert acao == b"https://app.example.com"
         # Vary: Origin should also be present.
         vary = next((v for (k, v) in starts[0]["headers"] if k == b"vary"), None)
@@ -491,8 +486,13 @@ class TestRedactFilter:
 
         flt = RedactFilter(env={})
         record = logging.LogRecord(
-            name="t", level=logging.INFO, pathname="x", lineno=1,
-            msg="hello", args=(), exc_info=None,
+            name="t",
+            level=logging.INFO,
+            pathname="x",
+            lineno=1,
+            msg="hello",
+            args=(),
+            exc_info=None,
         )
         assert flt.filter(record) is True
 

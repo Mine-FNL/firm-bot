@@ -17,6 +17,7 @@ markdown fences or adds prose, we extract the first JSON-looking block.
 We log every fallback fire so operators can spot when the judge prompt
 needs tightening.
 """
+
 from __future__ import annotations
 
 import json
@@ -59,11 +60,16 @@ SOURCES:
 class Issue:
     claim: str
     marker: str
-    verdict: str                # supported | unsupported | contradicted
+    verdict: str  # supported | unsupported | contradicted
     note: str = ""
 
     def to_dict(self) -> dict[str, str]:
-        return {"claim": self.claim, "marker": self.marker, "verdict": self.verdict, "note": self.note}
+        return {
+            "claim": self.claim,
+            "marker": self.marker,
+            "verdict": self.verdict,
+            "note": self.note,
+        }
 
 
 @dataclass
@@ -166,9 +172,10 @@ def stream_answer_with_ollama(
     response (``done: true``) or raises on connection failure.
     """
     payload = {"model": model, "messages": messages, "stream": True}
-    with httpx.Client(timeout=timeout_s) as client, client.stream(
-        "POST", f"{host.rstrip('/')}/api/chat", json=payload
-    ) as resp:
+    with (
+        httpx.Client(timeout=timeout_s) as client,
+        client.stream("POST", f"{host.rstrip('/')}/api/chat", json=payload) as resp,
+    ):
         resp.raise_for_status()
         for line in resp.iter_lines():
             if not line:

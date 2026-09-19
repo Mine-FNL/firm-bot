@@ -26,6 +26,7 @@ add ``app.add_middleware(ObservabilityMiddleware)`` to your FastAPI app.
 The optional ``prometheus_client`` dependency is installed via
 ``pip install firm-bot[observability]``.
 """
+
 from __future__ import annotations
 
 from prometheus_client import CONTENT_TYPE_LATEST

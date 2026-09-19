@@ -10,6 +10,7 @@ the same Python process).
 For multi-worker uvicorn deployment, each worker pays the load cost
 once at startup. That's fine.
 """
+
 from __future__ import annotations
 
 import logging

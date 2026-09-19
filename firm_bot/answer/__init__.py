@@ -17,6 +17,7 @@ cite a source for every factual claim. We enforce that in two layers:
 The guard is deliberately tolerant — it does NOT block the user from
 seeing what the model said. It annotates so a human can decide.
 """
+
 from __future__ import annotations
 
 from .guard import AnnotatedAnswer, verify_citations

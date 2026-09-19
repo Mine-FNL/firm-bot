@@ -11,6 +11,7 @@ Stopword list is deliberately short. Generic stopword lists (lucene, nltk)
 over-strip from legal prose ("the", "of", "and" carry semantic weight in
 contract headers like "Limitation of Liability").
 """
+
 from __future__ import annotations
 
 import re
@@ -18,10 +19,28 @@ from typing import Any
 
 # A conservative stopword list — keep generic words that hurt BM25 in
 # legal/business prose. Far shorter than the 150-word nltk set on purpose.
-_LEGAL_STOPWORDS = frozenset({
-    "the", "of", "and", "a", "an", "in", "to", "for", "is", "are",
-    "be", "that", "this", "with", "as", "by", "at", "from",
-})
+_LEGAL_STOPWORDS = frozenset(
+    {
+        "the",
+        "of",
+        "and",
+        "a",
+        "an",
+        "in",
+        "to",
+        "for",
+        "is",
+        "are",
+        "be",
+        "that",
+        "this",
+        "with",
+        "as",
+        "by",
+        "at",
+        "from",
+    }
+)
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]+")
 

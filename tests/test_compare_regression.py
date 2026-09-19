@@ -3,6 +3,7 @@
 Exercises `--check-regression`: given two JSON reports, exits 0 on no
 regression and 1 on a regression beyond the threshold.
 """
+
 from __future__ import annotations
 
 import json

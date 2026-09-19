@@ -20,6 +20,7 @@ The output is a JSON fixture with ``cases`` shaped like::
 CUAD's data files come from GitHub: https://github.com/TheAtticusProject/cuad
 This script downloads them if missing; otherwise uses a local copy.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -64,7 +65,14 @@ def _download_cuad(target: Path) -> Path:
     target.parent.mkdir(parents=True, exist_ok=True)
     print(f"cloning CUAD to {target} (one-time)...")
     subprocess.run(
-        ["git", "clone", "--depth", "1", "https://github.com/TheAtticusProject/cuad.git", str(target)],
+        [
+            "git",
+            "clone",
+            "--depth",
+            "1",
+            "https://github.com/TheAtticusProject/cuad.git",
+            str(target),
+        ],
         check=True,
     )
     print("unzipping data.zip...")
@@ -126,11 +134,13 @@ def build(out_path: Path, n_contracts: int = 10, max_per_contract: int = 3) -> d
                 if not kw:
                     continue
                 seen_questions.add(qtext)
-                cases.append({
-                    "question": norm,
-                    "expected_source": f"{short_title}.pdf",
-                    "expected_keywords": [kw],
-                })
+                cases.append(
+                    {
+                        "question": norm,
+                        "expected_source": f"{short_title}.pdf",
+                        "expected_keywords": [kw],
+                    }
+                )
                 questions_in_contract += 1
                 if questions_in_contract >= max_per_contract:
                     break
@@ -138,7 +148,11 @@ def build(out_path: Path, n_contracts: int = 10, max_per_contract: int = 3) -> d
                 break
         used_contracts += 1
 
-    fixture = {"cases": cases, "source": "CUAD (Contract Understanding Atticus Dataset)", "n_contracts": used_contracts}
+    fixture = {
+        "cases": cases,
+        "source": "CUAD (Contract Understanding Atticus Dataset)",
+        "n_contracts": used_contracts,
+    }
     out_path.write_text(json.dumps(fixture, indent=2))
     print(f"wrote {out_path} with {len(cases)} cases across {used_contracts} contracts")
     return fixture

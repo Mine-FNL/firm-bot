@@ -1,4 +1,5 @@
 """Hybrid retrieval: lexical (BM25) + dense (Chroma) fused via RRF."""
+
 from __future__ import annotations
 
 from .bm25 import bm25_search, tokenise

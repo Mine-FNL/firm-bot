@@ -17,6 +17,7 @@ v0.1 deliberately has NO auth. Each firm is a closed deployment
 (self-hosted inside a firm's network). When you put this on the
 internet, add auth — see SECURITY.md in the docs/ folder.
 """
+
 from __future__ import annotations
 
 from .app import app

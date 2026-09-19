@@ -22,6 +22,7 @@ Token-budget discipline:
   contracts can tune ``RootConfig.answer_k`` (chunks) and the chunk
   size to fit.
 """
+
 from __future__ import annotations
 
 import logging
@@ -89,10 +90,12 @@ def build_messages(
     if history:
         # trim to last 4 turns to keep context tight
         msgs.extend(history[-8:])
-    msgs.append({
-        "role": "user",
-        "content": _truncate(user_content_with_defence, max_context_chars),
-    })
+    msgs.append(
+        {
+            "role": "user",
+            "content": _truncate(user_content_with_defence, max_context_chars),
+        }
+    )
     return msgs
 
 

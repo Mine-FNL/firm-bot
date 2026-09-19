@@ -19,6 +19,7 @@ The contextvar approach is asyncio-safe: :class:`contextvars.ContextVar`
 snapshots propagate across ``await`` boundaries, so even code that
 yields to the event loop keeps the stage label attached.
 """
+
 from __future__ import annotations
 
 import logging
@@ -33,9 +34,7 @@ log = logging.getLogger("firm_bot.observability.timing")
 
 #: Holds the request id set by :class:`ObservabilityMiddleware`. JSON
 #: log records emitted while this is set include a ``"request_id"`` key.
-current_request_id: ContextVar[str | None] = ContextVar(
-    "firm_bot_request_id", default=None
-)
+current_request_id: ContextVar[str | None] = ContextVar("firm_bot_request_id", default=None)
 
 #: Holds the name of the pipeline stage currently in scope. JSON log
 #: records emitted while this is set include a ``"stage"`` key.

@@ -5,6 +5,7 @@ calls. We test a few representative commands end-to-end against the
 mocked Ollama + tmp data dir fixtures, plus the help text and error
 paths.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -54,6 +55,7 @@ def test_ingest_then_query_cli(env_data_dir: Path, sample_pdf: Path) -> None:
     cli_main(["firm", "create", "--slug", "acme", "--name", "Acme LLP"])
     # ingest
     import shutil
+
     shutil.copy(sample_pdf, env_data_dir / "firms" / "acme" / "source" / sample_pdf.name)
     rc = cli_main(["ingest", "acme"])
     assert rc == 0

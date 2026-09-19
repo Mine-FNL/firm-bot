@@ -11,6 +11,7 @@ Convention:
 - Operators see the full traceback via ``logging.exception``;
   end-users see ``user_message``.
 """
+
 from __future__ import annotations
 
 
@@ -59,8 +60,7 @@ class EmptyQueryError(FirmBotError):
 
 class OllamaUnreachableError(FirmBotError):
     user_message = (
-        "Could not reach the local Ollama server. "
-        "Is Ollama running on the configured host?"
+        "Could not reach the local Ollama server. Is Ollama running on the configured host?"
     )
 
 

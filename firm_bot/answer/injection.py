@@ -32,6 +32,7 @@ Configuration:
 The filter does NOT refuse the request. It annotates the response with
 a counter and a warning string so operators can investigate.
 """
+
 from __future__ import annotations
 
 import re
@@ -63,9 +64,7 @@ _PATTERNS: tuple[str, ...] = (
     r"end of (?:prompt|system)",
 )
 
-_COMPILED: tuple[re.Pattern[str], ...] = tuple(
-    re.compile(p, re.IGNORECASE) for p in _PATTERNS
-)
+_COMPILED: tuple[re.Pattern[str], ...] = tuple(re.compile(p, re.IGNORECASE) for p in _PATTERNS)
 
 
 def scan_text(text: str) -> list[str]:

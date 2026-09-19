@@ -8,6 +8,7 @@ Each top-level heading (``Heading 1``) starts a new section. We emit one
 ``Document`` per section so a chunk carries its heading context in
 metadata, not just raw text.
 """
+
 from __future__ import annotations
 
 import logging

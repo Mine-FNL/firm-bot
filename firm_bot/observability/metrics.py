@@ -16,6 +16,7 @@ cardinality sets (``firm``, ``status``, ``source_type``, ``stage``).
 The text exposition format is rendered by :func:`metrics_response`,
 which is the intended body of a ``GET /metrics`` endpoint.
 """
+
 from __future__ import annotations
 
 from fastapi import Response

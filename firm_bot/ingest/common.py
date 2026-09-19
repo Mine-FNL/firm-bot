@@ -11,6 +11,7 @@ The dispatch table maps a path's suffix to the right extractor. We
 import the extractors lazily inside ``dispatch`` to avoid a circular
 import (``pdf.py`` -> ``common.py`` -> ``pdf.py``).
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -27,6 +28,7 @@ SUPPORTED_SUFFIXES = {".pdf", ".eml", ".mbox", ".docx"}
 @dataclass
 class Document:
     """One unit of extracted text."""
+
     doc_id: str
     text: str
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -69,15 +71,19 @@ def dispatch(path: Path) -> list[Document]:
     suffix = path.suffix.lower()
     if suffix == ".pdf":
         from .pdf import extract_pdf
+
         return extract_pdf(path)
     if suffix == ".eml":
         from .eml import extract_eml
+
         return extract_eml(path)
     if suffix == ".mbox":
         from .eml import extract_mbox
+
         return extract_mbox(path)
     if suffix == ".docx":
         from .docx import extract_docx
+
         return extract_docx(path)
     return []
 

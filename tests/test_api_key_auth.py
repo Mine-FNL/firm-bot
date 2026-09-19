@@ -1,4 +1,5 @@
 """Tests for the API key auth middleware."""
+
 from __future__ import annotations
 
 import asyncio
@@ -68,19 +69,23 @@ def test_key_from_headers_no_header() -> None:
 
 def test_key_from_headers_bearer_preferred() -> None:
     """If both are present, Authorization: Bearer wins (checked first)."""
-    scope = _scope_with_headers([
-        ("X-API-Key", "from-x-header"),
-        ("Authorization", "Bearer from-auth"),
-    ])
+    scope = _scope_with_headers(
+        [
+            ("X-API-Key", "from-x-header"),
+            ("Authorization", "Bearer from-auth"),
+        ]
+    )
     assert key_from_headers(scope) == "from-auth"
 
 
 def test_key_from_headers_non_bearer_authorization() -> None:
     """If Authorization isn't Bearer, fall through to X-API-Key."""
-    scope = _scope_with_headers([
-        ("Authorization", "Basic dXNlcjpwYXNz"),
-        ("X-API-Key", "from-x-header"),
-    ])
+    scope = _scope_with_headers(
+        [
+            ("Authorization", "Basic dXNlcjpwYXNz"),
+            ("X-API-Key", "from-x-header"),
+        ]
+    )
     assert key_from_headers(scope) == "from-x-header"
 
 
@@ -123,9 +128,7 @@ def _collect_response(middleware: APIKeyAuthMiddleware, scope: dict[str, Any]) -
     if not captured:
         return (0, b"")
     start = next(m for m in captured if m["type"] == "http.response.start")
-    body = b"".join(
-        m.get("body", b"") for m in captured if m["type"] == "http.response.body"
-    )
+    body = b"".join(m.get("body", b"") for m in captured if m["type"] == "http.response.body")
     return (int(start["status"]), body)
 
 

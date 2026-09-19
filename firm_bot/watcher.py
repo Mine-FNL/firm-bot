@@ -11,6 +11,7 @@ trigger 1000 ingests.
 Operator can leave this running in the background; the FastAPI
 server can run independently.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -73,7 +74,9 @@ class _ReingestHandler(FileSystemEventHandler):
                 continue
             self.store.save_processed(src, docs)
             all_chunks.extend(
-                chunk_documents(docs, chunk_size=self.root.chunk_size, overlap=self.root.chunk_overlap)
+                chunk_documents(
+                    docs, chunk_size=self.root.chunk_size, overlap=self.root.chunk_overlap
+                )
             )
         if not all_chunks:
             log.info("nothing to index")

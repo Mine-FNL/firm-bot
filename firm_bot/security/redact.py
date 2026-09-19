@@ -34,6 +34,7 @@ This filter mutates ``record.getMessage()`` so downstream handlers /
 formatters emit the redacted text without affecting the original
 LogRecord.
 """
+
 from __future__ import annotations
 
 import logging
@@ -67,9 +68,7 @@ _RE_AUTH_LINE = re.compile(
     re.IGNORECASE,
 )
 
-_RE_EMAIL = re.compile(
-    r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b"
-)
+_RE_EMAIL = re.compile(r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b")
 
 _ENV_SECRET_SUFFIXES: tuple[str, ...] = ("_KEY", "_SECRET", "_TOKEN")
 
@@ -92,7 +91,8 @@ class RedactFilter(logging.Filter):
         src = env if env is not None else dict(os.environ)
         # Keep only values that look vaguely credential-like (>= 8 chars).
         self._env_values: list[str] = [
-            v for k, v in src.items()
+            v
+            for k, v in src.items()
             if any(k.endswith(s) for s in _ENV_SECRET_SUFFIXES)
             and isinstance(v, str)
             and len(v) >= 8

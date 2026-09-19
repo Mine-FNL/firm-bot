@@ -3,6 +3,7 @@
 Run with:
     pytest tests/test_ingest.py -q
 """
+
 from __future__ import annotations
 
 from pathlib import Path

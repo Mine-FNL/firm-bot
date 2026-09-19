@@ -25,6 +25,7 @@ retriever uses (see ``firm_bot.embed_backends``). We do not import from
 ``firm_bot`` so this module remains unit-testable without the heavy
 deps loaded.
 """
+
 from __future__ import annotations
 
 import logging

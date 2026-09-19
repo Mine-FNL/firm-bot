@@ -1,4 +1,5 @@
 """Tests for the BM25 + dense + RRF hybrid retrieval."""
+
 from __future__ import annotations
 
 
@@ -43,8 +44,14 @@ def test_hybrid_fusion_prefers_double_signal() -> None:
     class _StubStore:
         def __init__(self) -> None:
             self.chroma_data = {
-                "c_liability": {"text": "liability cap clause", "metadata": {"source_name": "a.pdf", "page": 4}},
-                "c_nda": {"text": "nda confidentiality", "metadata": {"source_name": "b.pdf", "page": 1}},
+                "c_liability": {
+                    "text": "liability cap clause",
+                    "metadata": {"source_name": "a.pdf", "page": 4},
+                },
+                "c_nda": {
+                    "text": "nda confidentiality",
+                    "metadata": {"source_name": "b.pdf", "page": 1},
+                },
             }
             self._chroma_collection = self
             self._bm25 = object()

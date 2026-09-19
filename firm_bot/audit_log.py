@@ -40,6 +40,7 @@ Endpoint shape (added in app.py):
     ?until=<ISO timestamp>  optional upper bound (default: now)
     ?format=json|md|csv     output format (default: json)
 """
+
 from __future__ import annotations
 
 import csv

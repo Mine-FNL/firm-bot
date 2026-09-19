@@ -15,6 +15,7 @@ We deliberately do NOT thread unrolling in v0.1. Lawyers ask
 "show me everything Alice said about the audit"; a thread-collapse pass
 would actually hurt retrieval. Document-level granularity is correct.
 """
+
 from __future__ import annotations
 
 import email
@@ -37,6 +38,7 @@ def _msg_to_document(path: Path, msg: Message) -> Document:
     The ``email`` package's stubs are incomplete for ``Message``; we use
     ``getattr`` to stay safe under mypy --strict.
     """
+
     def get(key: str, default: str = "") -> str:
         v = msg.get(key, default) or default
         return str(v)
@@ -65,9 +67,7 @@ def _msg_to_document(path: Path, msg: Message) -> Document:
     header_block = (
         f"Subject: {subject}\n"
         f"From: {from_}\n"
-        f"To: {to}\n"
-        + (f"Cc: {cc}\n" if cc else "")
-        + f"Date: {date}\n"
+        f"To: {to}\n" + (f"Cc: {cc}\n" if cc else "") + f"Date: {date}\n"
         f"Message-ID: {msg_id}\n\n"
     )
     text = header_block + body_text

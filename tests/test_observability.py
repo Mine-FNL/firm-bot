@@ -11,6 +11,7 @@ FastAPI app per-test rather than importing ``firm_bot.api.app`` —
 the latter is deliberately untouched in this change (middleware
 registration is a follow-up).
 """
+
 from __future__ import annotations
 
 import json
@@ -360,8 +361,8 @@ def test_middleware_skips_metrics_for_non_firm_path(fresh_registry: CollectorReg
     # No firm-scoped *samples* should appear for a /healthz call.
     # HELP/TYPE lines for collectors registered to the empty registry
     # are still emitted, so we look for the ``{``-bearing sample lines.
-    assert not re.search(r'^firmbot_query_requests_total\{', body, re.MULTILINE)
-    assert not re.search(r'^firmbot_query_latency_seconds_count\{', body, re.MULTILINE)
+    assert not re.search(r"^firmbot_query_requests_total\{", body, re.MULTILINE)
+    assert not re.search(r"^firmbot_query_latency_seconds_count\{", body, re.MULTILINE)
 
 
 def test_middleware_returns_500_json_on_exception(fresh_registry: CollectorRegistry) -> None:

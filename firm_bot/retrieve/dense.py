@@ -3,6 +3,7 @@
 Chroma already wraps HNSW + cosine, so this is a thin call: embed the
 query once, query the firm's collection, return ranked results.
 """
+
 from __future__ import annotations
 
 import logging

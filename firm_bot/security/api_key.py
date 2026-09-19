@@ -24,6 +24,7 @@ per-user identity. For real per-user auth, deploy behind
 oauth2-proxy / Pomerium / Cloudflare Access / your reverse proxy of
 choice. This module only provides a single shared-secret gate.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -96,8 +97,14 @@ class APIKeyAuthMiddleware:
 
     def __init__(
         self,
-        app: Callable[[dict[str, Any], Callable[[], Awaitable[dict[str, Any]]],
-                       Callable[[dict[str, Any]], Awaitable[None]]], Awaitable[None]],
+        app: Callable[
+            [
+                dict[str, Any],
+                Callable[[], Awaitable[dict[str, Any]]],
+                Callable[[dict[str, Any]], Awaitable[None]],
+            ],
+            Awaitable[None],
+        ],
         valid_keys: list[str],
         enabled: bool = True,
     ) -> None:
@@ -143,10 +150,12 @@ class APIKeyAuthMiddleware:
         status: int,
         reason: str,
     ) -> None:
-        await send({
-            "type": "http.response.start",
-            "status": status,
-            "headers": [(b"content-type", b"application/json")],
-        })
+        await send(
+            {
+                "type": "http.response.start",
+                "status": status,
+                "headers": [(b"content-type", b"application/json")],
+            }
+        )
         body = ('{"error": "unauthorized", "reason": "' + reason + '"}').encode("utf-8")
         await send({"type": "http.response.body", "body": body, "more_body": False})

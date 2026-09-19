@@ -14,6 +14,7 @@ The hybrid heuristic mirrors what Falcon Nest's ``document_ingestion.py``
 does — selectable headers/footers do NOT count as "text-backed" because
 poppler can fabricate them. We use a stricter word-count threshold.
 """
+
 from __future__ import annotations
 
 import logging
@@ -81,7 +82,7 @@ def extract_pdf(path: Path) -> list[Document]:
         if _page_words(text) >= PAGE_TEXT_MIN_WORDS:
             out.append(
                 Document(
-                    doc_id=stable_doc_id(str(path), f"page-{i+1}"),
+                    doc_id=stable_doc_id(str(path), f"page-{i + 1}"),
                     text=_clean(text),
                     metadata={
                         "source_path": str(path),
@@ -98,7 +99,9 @@ def extract_pdf(path: Path) -> list[Document]:
         if ocr_used >= MAX_OCR_PAGES:
             log.warning(
                 "OCR cap (%d) reached for %s, page %d skipped",
-                MAX_OCR_PAGES, path, i + 1,
+                MAX_OCR_PAGES,
+                path,
+                i + 1,
             )
             continue
         try:
@@ -110,7 +113,7 @@ def extract_pdf(path: Path) -> list[Document]:
         if _page_words(ocr_text) >= PAGE_TEXT_MIN_WORDS:
             out.append(
                 Document(
-                    doc_id=stable_doc_id(str(path), f"page-{i+1}"),
+                    doc_id=stable_doc_id(str(path), f"page-{i + 1}"),
                     text=_clean(ocr_text),
                     metadata={
                         "source_path": str(path),

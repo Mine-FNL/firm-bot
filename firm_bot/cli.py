@@ -15,6 +15,7 @@ Subcommands mirror the API:
 Each subcommand is a small argparse subparser so the surface stays
 discoverable via ``firm-bot --help``.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -34,7 +35,11 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="firm-bot",
         description="Multi-tenant local-first chatbot builder.",
     )
-    parser.add_argument("--data-dir", default=None, help="override RootConfig.data_dir (default: $FIRM_BOT_DATA_DIR or ./data)")
+    parser.add_argument(
+        "--data-dir",
+        default=None,
+        help="override RootConfig.data_dir (default: $FIRM_BOT_DATA_DIR or ./data)",
+    )
     parser.add_argument("--verbose", "-v", action="count", default=0)
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -133,6 +138,7 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_migrate(args, root)
     if args.cmd == "watch":
         from .watcher import cmd_watch
+
         return cmd_watch(args, root)
     if args.cmd == "serve":
         return _cmd_serve(args, root)
@@ -153,6 +159,7 @@ def _setup_logging(verbose: int) -> None:
 
 def _load_root(data_dir: str | None) -> RootConfig:
     import os
+
     dd = data_dir or os.environ.get("FIRM_BOT_DATA_DIR") or "./data"
     cfg_path = Path(dd) / "config.yaml"
     root = RootConfig.load(cfg_path) if cfg_path.exists() else RootConfig(data_dir=dd)
@@ -247,7 +254,12 @@ def _ingest_source_dir(
         all_chunks.extend(chunks)
         stats.documents_total += len(documents)
     if not all_chunks:
-        print(json.dumps({"stats": stats.as_dict(), "chunks_indexed": 0, "warning": "no chunks produced"}, indent=2))
+        print(
+            json.dumps(
+                {"stats": stats.as_dict(), "chunks_indexed": 0, "warning": "no chunks produced"},
+                indent=2,
+            )
+        )
         return 0
     texts = [c.text for c in all_chunks]
     embeddings = embedder.embed(texts)
@@ -267,7 +279,9 @@ def _cmd_query(args: argparse.Namespace, root: RootConfig) -> int:
     store = Store.open(root, args.slug)
     embedder = get_embedder(root)
     if store.collection().count() == 0:
-        print("error: firm has no indexed chunks; run `firm-bot ingest <slug>` first", file=sys.stderr)
+        print(
+            "error: firm has no indexed chunks; run `firm-bot ingest <slug>` first", file=sys.stderr
+        )
         return 2
     hits = hybrid_search(
         store=store,
@@ -278,7 +292,12 @@ def _cmd_query(args: argparse.Namespace, root: RootConfig) -> int:
         k=args.k or root.answer_k,
     )
     if not hits:
-        print(json.dumps({"answer": "I don't know — no relevant chunks were retrieved.", "hits": []}, indent=2))
+        print(
+            json.dumps(
+                {"answer": "I don't know — no relevant chunks were retrieved.", "hits": []},
+                indent=2,
+            )
+        )
         return 0
     model = store.config.llm_model or root.llm_model
     system = store.config.effective_system_prompt(root)
@@ -289,15 +308,25 @@ def _cmd_query(args: argparse.Namespace, root: RootConfig) -> int:
         "answer": answer,
         "cited": cited,
         "hits": [
-            {"chunk_id": h.chunk_id, "marker": h.metadata.get("source_name"), "score": round(h.score, 4),
-             "bm25_rank": h.bm25_rank, "dense_rank": h.dense_rank}
+            {
+                "chunk_id": h.chunk_id,
+                "marker": h.metadata.get("source_name"),
+                "score": round(h.score, 4),
+                "bm25_rank": h.bm25_rank,
+                "dense_rank": h.dense_rank,
+            }
             for h in hits
         ],
         "model": model,
     }
     if not args.no_guard:
-        sources_for_judge = [(f"[{h.metadata.get('source_name', '?')}:{h.metadata.get('page', '?')}]", h.text) for h in hits]
-        ann = verify_citations(answer, sources_for_judge, root.ollama_host, root.llm_judge_model, root.llm_timeout_s)
+        sources_for_judge = [
+            (f"[{h.metadata.get('source_name', '?')}:{h.metadata.get('page', '?')}]", h.text)
+            for h in hits
+        ]
+        ann = verify_citations(
+            answer, sources_for_judge, root.ollama_host, root.llm_judge_model, root.llm_timeout_s
+        )
         out["issues"] = [i.to_dict() for i in ann.issues]
         out["summary"] = ann.summary
     print(json.dumps(out, indent=2))
@@ -326,8 +355,11 @@ def _cmd_eval(args: argparse.Namespace, root: RootConfig) -> int:
         expected_sources = case.get("expected_sources") or []
         expected_keywords = case.get("expected_keywords") or []
         hits = hybrid_search(
-            store=store, query=q, embed=embedder.embed,
-            bm25_weight=root.hybrid_bm25_weight, dense_weight=root.hybrid_dense_weight,
+            store=store,
+            query=q,
+            embed=embedder.embed,
+            bm25_weight=root.hybrid_bm25_weight,
+            dense_weight=root.hybrid_dense_weight,
             k=root.answer_k,
         )
         if not hits:
@@ -336,24 +368,37 @@ def _cmd_eval(args: argparse.Namespace, root: RootConfig) -> int:
         messages = build_messages(store.config.effective_system_prompt(root), q, hits)
         answer = answer_with_ollama(root.ollama_host, model, messages, root.llm_timeout_s)
         cited = extract_cited_sources(answer)
-        s_cov = sum(1 for s in expected_sources if any(s in c for c in cited)) / max(len(expected_sources), 1)
-        k_cov = sum(1 for k in expected_keywords if k.lower() in answer.lower()) / max(len(expected_keywords), 1)
-        sources_for_judge = [(f"[{h.metadata.get('source_name', '?')}:{h.metadata.get('page', '?')}]", h.text) for h in hits]
-        ann = verify_citations(answer, sources_for_judge, root.ollama_host, root.llm_judge_model, root.llm_timeout_s)
-        rows.append({
-            "question": q,
-            "cited": cited,
-            "source_coverage": round(s_cov, 3),
-            "keyword_coverage": round(k_cov, 3),
-            "issues": len(ann.issues),
-            "pass": s_cov >= 0.5 and k_cov >= 0.5 and len(ann.issues) == 0,
-        })
+        s_cov = sum(1 for s in expected_sources if any(s in c for c in cited)) / max(
+            len(expected_sources), 1
+        )
+        k_cov = sum(1 for k in expected_keywords if k.lower() in answer.lower()) / max(
+            len(expected_keywords), 1
+        )
+        sources_for_judge = [
+            (f"[{h.metadata.get('source_name', '?')}:{h.metadata.get('page', '?')}]", h.text)
+            for h in hits
+        ]
+        ann = verify_citations(
+            answer, sources_for_judge, root.ollama_host, root.llm_judge_model, root.llm_timeout_s
+        )
+        rows.append(
+            {
+                "question": q,
+                "cited": cited,
+                "source_coverage": round(s_cov, 3),
+                "keyword_coverage": round(k_cov, 3),
+                "issues": len(ann.issues),
+                "pass": s_cov >= 0.5 and k_cov >= 0.5 and len(ann.issues) == 0,
+            }
+        )
     n = len(rows)
     agg = {
         "cases": n,
         "pass_rate": round(sum(1 for r in rows if r.get("pass")) / max(n, 1), 3),
         "avg_source_coverage": round(sum(r.get("source_coverage", 0) for r in rows) / max(n, 1), 3),
-        "avg_keyword_coverage": round(sum(r.get("keyword_coverage", 0) for r in rows) / max(n, 1), 3),
+        "avg_keyword_coverage": round(
+            sum(r.get("keyword_coverage", 0) for r in rows) / max(n, 1), 3
+        ),
         "avg_issues": round(sum(r.get("issues", 0) for r in rows) / max(n, 1), 2),
     }
     print(json.dumps({"aggregate": agg, "rows": rows}, indent=2))
@@ -395,8 +440,10 @@ def _cmd_migrate(args: argparse.Namespace, root: RootConfig) -> int:
 
 def _cmd_serve(args: argparse.Namespace, root: RootConfig) -> int:
     import os
+
     os.environ.setdefault("FIRM_BOT_DATA_DIR", root.data_dir)
     import uvicorn
+
     uvicorn.run(
         "firm_bot.api:app",
         host=args.host,
@@ -429,6 +476,7 @@ def _cmd_demo(args: argparse.Namespace, root: RootConfig) -> int:
     # Optional destructive reset
     if args.reset and firm_dir.exists():
         import shutil
+
         shutil.rmtree(firm_dir)
         print(f"removed existing firm: {firm_dir}")
 
@@ -436,6 +484,7 @@ def _cmd_demo(args: argparse.Namespace, root: RootConfig) -> int:
     firm_cfg_path = firm_dir / "config.yaml"
     if not firm_cfg_path.exists():
         from .config import FirmConfig
+
         cfg = FirmConfig(slug=args.slug, name=args.name)
         if args.llm_model:
             cfg.llm_model = args.llm_model
@@ -446,6 +495,7 @@ def _cmd_demo(args: argparse.Namespace, root: RootConfig) -> int:
 
     # Copy bundled samples into the firm's source/ directory
     from .store import Store
+
     store = Store.open(root, args.slug)
     copied: list[str] = []
     for src in sorted(samples_root.glob("*.pdf")):
@@ -460,15 +510,18 @@ def _cmd_demo(args: argparse.Namespace, root: RootConfig) -> int:
 
     # Reuse the same ingest pipeline as `firm-bot ingest`
     from .api.embed_cache import get_embedder
+
     indexed = _ingest_source_dir(root, store, get_embedder(root))
 
-    print(json.dumps(
-        {
-            "chunks_indexed": indexed,
-            "ready_for": f"firm-bot query {args.slug} \"What's the cap on liability?\"",
-        },
-        indent=2,
-    ))
+    print(
+        json.dumps(
+            {
+                "chunks_indexed": indexed,
+                "ready_for": f'firm-bot query {args.slug} "What\'s the cap on liability?"',
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

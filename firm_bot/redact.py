@@ -36,6 +36,7 @@ Regex is not a substitute for proper NER; we catch common formats but
 will miss names, addresses, and unusual identifiers. For high-stakes
 deployments, layer a real NER model (presidio, GLiNER) on top.
 """
+
 from __future__ import annotations
 
 import logging
@@ -71,7 +72,9 @@ _RE_IBAN = re.compile(r"\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b")
 
 # IP address: four 0-255 octets, with word boundaries so we don't match
 # "1.2.3" in a contract clause numbering like "Section 1.2.3".
-_RE_IPV4 = re.compile(r"\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\b")
+_RE_IPV4 = re.compile(
+    r"\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\b"
+)
 
 
 @dataclass(frozen=True)
@@ -149,6 +152,7 @@ def _luhn_check(digits: str) -> bool:
 
 def redact_credit_cards_validated(text: str) -> str:
     """Stricter card redactor that only matches Luhn-valid numbers."""
+
     def _sub(m: re.Match[str]) -> str:
         return "[CARD-REDACTED]" if _luhn_check(m.group(0)) else m.group(0)
 

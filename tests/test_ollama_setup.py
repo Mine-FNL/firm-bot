@@ -1,4 +1,5 @@
 """Tests for firm_bot.ollama_setup — auto-pull on startup."""
+
 from __future__ import annotations
 
 import httpx
@@ -63,9 +64,7 @@ def test_pull_model_streams_ndjson_progress() -> None:
     ]
     body = "\n".join(lines).encode("utf-8")
     with respx.mock(base_url=HOST, assert_all_called=False) as mock:
-        mock.post("/api/pull").mock(
-            return_value=httpx.Response(200, content=body)
-        )
+        mock.post("/api/pull").mock(return_value=httpx.Response(200, content=body))
         events = list(pull_model(HOST, "qwen2.5-coder:7b"))
     assert len(events) == 3
     assert events[-1]["status"] == "success"
@@ -96,12 +95,8 @@ def test_ensure_model_pulled_pulls_when_missing() -> None:
     """If the model is missing, /api/pull is called and success is reported."""
     body = b'{"status":"pulling manifest"}\n{"status":"success"}\n'
     with respx.mock(base_url=HOST, assert_all_called=False) as mock:
-        mock.get("/api/tags").mock(
-            return_value=httpx.Response(200, json={"models": []})
-        )
-        pull_route = mock.post("/api/pull").mock(
-            return_value=httpx.Response(200, content=body)
-        )
+        mock.get("/api/tags").mock(return_value=httpx.Response(200, json={"models": []}))
+        pull_route = mock.post("/api/pull").mock(return_value=httpx.Response(200, content=body))
         ok = ensure_model_pulled(HOST, "qwen2.5-coder:1.5b-instruct")
     assert ok is True
     assert pull_route.call_count == 1
@@ -110,9 +105,7 @@ def test_ensure_model_pulled_pulls_when_missing() -> None:
 def test_ensure_model_pulled_swallows_pull_failure() -> None:
     """A failing /api/pull should NOT raise; ensure_model_pulled returns False."""
     with respx.mock(base_url=HOST, assert_all_called=False) as mock:
-        mock.get("/api/tags").mock(
-            return_value=httpx.Response(200, json={"models": []})
-        )
+        mock.get("/api/tags").mock(return_value=httpx.Response(200, json={"models": []}))
         mock.post("/api/pull").mock(return_value=httpx.Response(500, content=b"oops"))
         ok = ensure_model_pulled(HOST, "qwen2.5-coder:1.5b-instruct")
     assert ok is False

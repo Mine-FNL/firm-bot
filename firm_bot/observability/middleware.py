@@ -16,6 +16,7 @@ other observability modules:
 Install with ``app.add_middleware(ObservabilityMiddleware)`` after
 the FastAPI app is created.
 """
+
 from __future__ import annotations
 
 import logging

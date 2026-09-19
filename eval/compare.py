@@ -13,6 +13,7 @@ Usage:
     python -m eval.compare --out eval/results.json
     python -m eval.compare --markdown
 """
+
 from __future__ import annotations
 
 import argparse
@@ -69,7 +70,7 @@ def naive_chunk(doc: Document, chunk_size: int = 1200, overlap: int = 200) -> li
 @dataclass
 class BenchCase:
     question: str
-    expected_source: str          # partial filename match
+    expected_source: str  # partial filename match
     expected_keywords: list[str] = field(default_factory=list)
 
 
@@ -78,8 +79,8 @@ class BenchRow:
     question: str
     chunker: str
     expected_source: str
-    precision_at_k: float          # 1.0 if top-k hits the expected source
-    keyword_coverage: float       # fraction of expected keywords in top-1
+    precision_at_k: float  # 1.0 if top-k hits the expected source
+    keyword_coverage: float  # fraction of expected keywords in top-1
     retrieval_ms: float
     top_hit_id: str
     top_hit_source: str
@@ -255,7 +256,9 @@ def run_benchmark(
                     keyword_coverage=kw_cov,
                     retrieval_ms=ms,
                     top_hit_id=top_hit.chunk_id if top_hit else "",
-                    top_hit_source=str(top_hit.metadata.get("source_name", "?")) if top_hit else "?",
+                    top_hit_source=str(top_hit.metadata.get("source_name", "?"))
+                    if top_hit
+                    else "?",
                 )
             )
 
@@ -300,7 +303,9 @@ def run_benchmark(
                     keyword_coverage=kw_cov,
                     retrieval_ms=ms,
                     top_hit_id=top_hit.chunk_id if top_hit else "",
-                    top_hit_source=str(top_hit.metadata.get("source_name", "?")) if top_hit else "?",
+                    top_hit_source=str(top_hit.metadata.get("source_name", "?"))
+                    if top_hit
+                    else "?",
                 )
             )
     return _aggregate(rows)
@@ -437,9 +442,7 @@ def _check_regression(
         c = c_map.get(chunker, 0.0)
         delta_pp = (b - c) * 100.0  # percentage points; positive = regression
         flag = "  ⚠" if delta_pp > max_regression_pct else ""
-        lines.append(
-            f"  {chunker:<32} {b*100:>9.2f}% {c*100:>9.2f}% {delta_pp:>+9.2f}{flag}"
-        )
+        lines.append(f"  {chunker:<32} {b * 100:>9.2f}% {c * 100:>9.2f}% {delta_pp:>+9.2f}{flag}")
         if delta_pp > max_regression_pct:
             regressions.append(
                 f"{chunker}: baseline {b:.3f} → current {c:.3f} ({delta_pp:+.1f} pp)"

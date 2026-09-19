@@ -1,4 +1,5 @@
 """Tests for the CUAD benchmark builder."""
+
 from __future__ import annotations
 
 from pathlib import Path

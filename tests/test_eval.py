@@ -1,4 +1,5 @@
 """Tests for the faithfulness eval harness."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -36,8 +37,16 @@ def test_eval_runs_against_mock_ollama(
         "/v1/firms/demo/eval",
         json={
             "cases": [
-                {"question": "liability cap", "expected_sources": ["sample_contract"], "expected_keywords": []},
-                {"question": "alpha alpha alpha", "expected_sources": [], "expected_keywords": ["alpha"]},
+                {
+                    "question": "liability cap",
+                    "expected_sources": ["sample_contract"],
+                    "expected_keywords": [],
+                },
+                {
+                    "question": "alpha alpha alpha",
+                    "expected_sources": [],
+                    "expected_keywords": ["alpha"],
+                },
             ]
         },
     )

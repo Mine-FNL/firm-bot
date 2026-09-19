@@ -8,6 +8,7 @@ Measures:
 Run with:
     python -m eval.bench --slug demo --queries 30
 """
+
 from __future__ import annotations
 
 import argparse
@@ -31,7 +32,11 @@ def main() -> int:
     args = parser.parse_args()
 
     data_dir = args.data_dir or "data"
-    root = RootConfig.load(Path(data_dir) / "config.yaml") if (Path(data_dir) / "config.yaml").exists() else RootConfig(data_dir=data_dir)
+    root = (
+        RootConfig.load(Path(data_dir) / "config.yaml")
+        if (Path(data_dir) / "config.yaml").exists()
+        else RootConfig(data_dir=data_dir)
+    )
 
     store = Store.open(root, args.slug)
     embedder = get_embedder(root)

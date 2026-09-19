@@ -16,6 +16,7 @@ and ``k_rrf`` (often 60) flattens the contribution of lower ranks. We
 default to weights from RootConfig (``hybrid_bm25_weight`` and
 ``hybrid_dense_weight``) and k_rrf=60.
 """
+
 from __future__ import annotations
 
 import logging
@@ -131,7 +132,9 @@ def hybrid_search(
     return out
 
 
-def _bm25_with_chunks(bm25: Any, meta: list[dict[str, object]], query: str, store: Store, k: int) -> list[tuple[str, float, int]]:
+def _bm25_with_chunks(
+    bm25: Any, meta: list[dict[str, object]], query: str, store: Store, k: int
+) -> list[tuple[str, float, int]]:
     from .bm25 import tokenise
 
     if bm25 is None or not meta:
@@ -151,7 +154,9 @@ def _bm25_with_chunks(bm25: Any, meta: list[dict[str, object]], query: str, stor
     return out
 
 
-def _dense_with_chunks(store: Store, query: str, embed: Callable[[list[str]], list[list[float]]], k: int) -> list[tuple[str, float, int]]:
+def _dense_with_chunks(
+    store: Store, query: str, embed: Callable[[list[str]], list[list[float]]], k: int
+) -> list[tuple[str, float, int]]:
     from .dense import dense_search
 
     col = store.collection()

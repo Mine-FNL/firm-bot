@@ -10,6 +10,7 @@ This test is opt-in via ``FIRM_BOT_RUN_LOAD_BENCH=1`` because it takes
 several seconds and the harness is designed for benchmark purposes, not
 unit-level regression.
 """
+
 from __future__ import annotations
 
 import asyncio

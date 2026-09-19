@@ -19,6 +19,7 @@ backends produce ``list[list[float]]`` of unit-normalised vectors, so
 mixing them is safe as long as you set ``embedding_model`` consistently
 and re-ingest after switching.
 """
+
 from __future__ import annotations
 
 import logging

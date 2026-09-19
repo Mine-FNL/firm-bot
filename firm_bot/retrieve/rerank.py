@@ -26,6 +26,7 @@ Cost
 For K=6 and 200-token chunks, ~30 ms added to each query. Negligible
 compared to the ~7 s answer-generation step.
 """
+
 from __future__ import annotations
 
 import logging

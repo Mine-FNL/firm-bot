@@ -19,6 +19,7 @@ This chunker:
 Metadata flows from the parent ``Document`` into every chunk, augmented
 with ``chunk_index`` and an estimated ``char_offset`` for debugging.
 """
+
 from __future__ import annotations
 
 import logging
@@ -54,18 +55,18 @@ log = logging.getLogger("firm_bot.chunk")
 # The 5-char min prevents one-word proper nouns ("Bob", "Alice") from
 # being treated as section headings.
 RE_SECTION = re.compile(
-    r"^(?:"                                                              # group
-    r"(?i:article|section|chapter|schedule|exhibit|annex|appendix)\s+"   # word (CI)
-    r"(?:[A-Z0-9]+(?:\.[A-Z0-9]+)*\.?"                                   # numbering
-    r"|[IVXLCDM]+\.?)"                                                    # roman
+    r"^(?:"  # group
+    r"(?i:article|section|chapter|schedule|exhibit|annex|appendix)\s+"  # word (CI)
+    r"(?:[A-Z0-9]+(?:\.[A-Z0-9]+)*\.?"  # numbering
+    r"|[IVXLCDM]+\.?)"  # roman
     r"|"
-    r"\d+(?:\.\d+){0,4}\s+[A-Z][A-Za-z]"                                  # 1.2 Foo
+    r"\d+(?:\.\d+){0,4}\s+[A-Z][A-Za-z]"  # 1.2 Foo
     r"|"
-    r"[A-Z][A-Z0-9 ]{4,}$"                                                # ALL CAPS line
+    r"[A-Z][A-Z0-9 ]{4,}$"  # ALL CAPS line
     r"|"
-    r"(?:"                                                                # Title Case short line
-    r"(?:[A-Z][a-z]{3,}"                                                  # single Title word (>=4 chars)
-    r"|[A-Z][a-z]+\s+(?:[A-Z][a-z]+\s+){0,4}[A-Z][a-z]+)"                 # 2-5 Title words
+    r"(?:"  # Title Case short line
+    r"(?:[A-Z][a-z]{3,}"  # single Title word (>=4 chars)
+    r"|[A-Z][a-z]+\s+(?:[A-Z][a-z]+\s+){0,4}[A-Z][a-z]+)"  # 2-5 Title words
     r")\.?"
     r"$"
     r")",
@@ -221,10 +222,12 @@ def chunk_documents(
         sized: list[str] = []
         for sec in sections:
             # per-section: split long, merge tiny. Sections stay distinct.
-            sized.extend(_merge_tiny_in_section(
-                _split_long_section(sec, chunk_size, overlap),
-                min_size,
-            ))
+            sized.extend(
+                _merge_tiny_in_section(
+                    _split_long_section(sec, chunk_size, overlap),
+                    min_size,
+                )
+            )
         for i, text in enumerate(sized):
             cid = f"{doc.doc_id}:{i}"
             md = dict(doc.metadata)
@@ -238,5 +241,9 @@ def chunk_documents(
                     metadata=md,
                 )
             )
-    log.debug("chunked %d inputs → %d chunks", len(documents) if isinstance(documents, list) else -1, len(out))
+    log.debug(
+        "chunked %d inputs → %d chunks",
+        len(documents) if isinstance(documents, list) else -1,
+        len(out),
+    )
     return out

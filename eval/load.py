@@ -17,6 +17,7 @@ The benchmark stubs the LLM call by default (no Ollama needed). Pass
 ``--no-mock-llm`` to actually call Ollama (requires the model to be
 pulled and reachable).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -169,7 +170,9 @@ async def _run_against_app(
             question = queries[i % len(queries)]
             payload = {"question": question, "run_guard": run_guard, "k": 4}
             transport = httpx.ASGITransport(app=app)
-            async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+            async with httpx.AsyncClient(
+                transport=transport, base_url="http://testserver"
+            ) as client:
                 elapsed, ok = await _run_one_query(client, url, payload)
             stats.add(elapsed, ok)
             completed += 1
@@ -193,16 +196,18 @@ def _format_markdown(concurrency: int, total: int, stats: LatencyStats, elapsed_
 
 | Metric | Value |
 |--------|-------|
-| p50 latency | {p['p50_ms']:.1f} ms |
-| p95 latency | {p['p95_ms']:.1f} ms |
-| p99 latency | {p['p99_ms']:.1f} ms |
-| min | {p['min_ms']:.1f} ms |
-| max | {p['max_ms']:.1f} ms |
-| mean | {p['mean_ms']:.1f} ms |
+| p50 latency | {p["p50_ms"]:.1f} ms |
+| p95 latency | {p["p95_ms"]:.1f} ms |
+| p99 latency | {p["p99_ms"]:.1f} ms |
+| min | {p["min_ms"]:.1f} ms |
+| max | {p["max_ms"]:.1f} ms |
+| mean | {p["mean_ms"]:.1f} ms |
 """
 
 
-def _format_json(concurrency: int, total: int, stats: LatencyStats, elapsed_s: float) -> dict[str, Any]:
+def _format_json(
+    concurrency: int, total: int, stats: LatencyStats, elapsed_s: float
+) -> dict[str, Any]:
     p = _percentile_label(stats)
     return {
         "concurrency": concurrency,
@@ -267,7 +272,9 @@ def _setup_test_app() -> tuple[Any, str]:
 async def _amain(args: argparse.Namespace) -> int:
     queries = DEFAULT_QUERIES
     if args.queries_file:
-        queries = [ln.strip() for ln in Path(args.queries_file).read_text().splitlines() if ln.strip()]
+        queries = [
+            ln.strip() for ln in Path(args.queries_file).read_text().splitlines() if ln.strip()
+        ]
 
     if args.live_url:
         url = f"{args.live_url.rstrip('/')}/v1/firms/{args.slug}/query"
@@ -278,14 +285,18 @@ async def _amain(args: argparse.Namespace) -> int:
         url = f"/v1/firms/{slug}/query"
 
     def progress(done: int, total: int) -> None:
-        print(f"  progress: {done}/{total} ({100*done/total:.0f}%)", flush=True)
+        print(f"  progress: {done}/{total} ({100 * done / total:.0f}%)", flush=True)
 
     print(f"load: {args.total} queries at concurrency {args.concurrency} against {url}")
     start = time.perf_counter()
     if app is not None:
-        stats = await _run_against_app(app, slug, queries, args.concurrency, args.total, not args.no_guard, progress)
+        stats = await _run_against_app(
+            app, slug, queries, args.concurrency, args.total, not args.no_guard, progress
+        )
     else:
-        stats = await _run_load(url, queries, args.concurrency, args.total, not args.no_guard, progress)
+        stats = await _run_load(
+            url, queries, args.concurrency, args.total, not args.no_guard, progress
+        )
     elapsed = time.perf_counter() - start
 
     j = _format_json(args.concurrency, args.total, stats, elapsed)
@@ -304,11 +315,27 @@ async def _amain(args: argparse.Namespace) -> int:
 def main() -> int:
     p = argparse.ArgumentParser(description="firm-bot concurrent load benchmark")
     p.add_argument("--total", type=int, default=100, help="total queries to fire (default: 100)")
-    p.add_argument("--concurrency", type=int, default=8, help="max concurrent in-flight (default: 8)")
-    p.add_argument("--live-url", type=str, default=None, help="benchmark a running server (default: in-process TestClient)")
+    p.add_argument(
+        "--concurrency", type=int, default=8, help="max concurrent in-flight (default: 8)"
+    )
+    p.add_argument(
+        "--live-url",
+        type=str,
+        default=None,
+        help="benchmark a running server (default: in-process TestClient)",
+    )
     p.add_argument("--slug", type=str, default="loadbench", help="firm slug (used with --live-url)")
-    p.add_argument("--queries-file", type=str, default=None, help="newline-delimited query list (default: built-in 10 queries)")
-    p.add_argument("--no-guard", action="store_true", help="skip the citation guard to isolate retrieval latency")
+    p.add_argument(
+        "--queries-file",
+        type=str,
+        default=None,
+        help="newline-delimited query list (default: built-in 10 queries)",
+    )
+    p.add_argument(
+        "--no-guard",
+        action="store_true",
+        help="skip the citation guard to isolate retrieval latency",
+    )
     p.add_argument("--output-json", type=str, default=None, help="write JSON results to this path")
     p.add_argument("--output-md", type=str, default=None, help="write Markdown report to this path")
     args = p.parse_args()

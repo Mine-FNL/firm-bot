@@ -24,6 +24,7 @@ Calling :func:`setup_logging` more than once is safe: it clears
 existing handlers on the root logger first, so tests that flip the
 level mid-run do not stack handlers.
 """
+
 from __future__ import annotations
 
 import datetime
@@ -122,7 +123,9 @@ class JsonFormatter(logging.Formatter):
             # JSON strings allow ``\n`` — log shippers handle that
             # without special-casing.
             payload["exc_info"] = "".join(
-                traceback.format_exception(record.exc_info[0], record.exc_info[1], record.exc_info[2])
+                traceback.format_exception(
+                    record.exc_info[0], record.exc_info[1], record.exc_info[2]
+                )
             )
 
         if record.stack_info:

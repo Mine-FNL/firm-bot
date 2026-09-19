@@ -23,6 +23,7 @@ Limitations
 deployments, swap this implementation for one backed by Redis (or any
 shared store) — see SECURITY.md "Operational notes".
 """
+
 from __future__ import annotations
 
 import threading

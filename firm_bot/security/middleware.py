@@ -20,6 +20,7 @@ Scope
   it appears in the allow list. When the list is empty no CORS
   headers are emitted — this is a fail-closed default.
 """
+
 from __future__ import annotations
 
 import json
@@ -64,8 +65,14 @@ class SecurityMiddleware:
 
     def __init__(
         self,
-        app: Callable[[dict[str, Any], Callable[[], Awaitable[dict[str, Any]]],
-                       Callable[[dict[str, Any]], Awaitable[None]]], Awaitable[None]],
+        app: Callable[
+            [
+                dict[str, Any],
+                Callable[[], Awaitable[dict[str, Any]]],
+                Callable[[dict[str, Any]], Awaitable[None]],
+            ],
+            Awaitable[None],
+        ],
         rate_limiter: RateLimiter,
         max_body_bytes: int,
         cors_allow_origins: list[str] | tuple[str, ...] | None,
@@ -139,9 +146,7 @@ class SecurityMiddleware:
         # 4. CORS echo on the response (origin headers) — only if origin
         # is allow-listed. We attach via a wrapped send.
         origin = _header_value(scope["headers"], b"origin")
-        echo_origin = (
-            origin if (origin is not None and self._is_allowed_origin(origin)) else None
-        )
+        echo_origin = origin if (origin is not None and self._is_allowed_origin(origin)) else None
         if echo_origin is not None or self._wildcard:
             send = _CorsSendWrapper(
                 send,

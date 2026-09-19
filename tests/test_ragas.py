@@ -4,6 +4,7 @@ The judge is mocked as a closure that returns canned yes/no answers —
 the metric functions only depend on the (prompt, system) → str
 contract, so we never touch a real Ollama here.
 """
+
 from __future__ import annotations
 
 import math
@@ -267,7 +268,12 @@ class TestScoreAll:
         )
 
         assert isinstance(result, RagasScores)
-        for field_name in ("faithfulness", "answer_relevancy", "context_precision", "context_recall"):
+        for field_name in (
+            "faithfulness",
+            "answer_relevancy",
+            "context_precision",
+            "context_recall",
+        ):
             v = getattr(result, field_name)
             assert isinstance(v, float), f"{field_name} should be float, got {type(v)}"
             if not math.isnan(v):

@@ -3,6 +3,7 @@
 Run with:
     pytest tests/test_smoke.py -q
 """
+
 from __future__ import annotations
 
 import json
@@ -79,12 +80,23 @@ class TestRetrievalShape:
         from firm_bot.answer.prompt import _marker_from_meta
 
         assert _marker_from_meta({"source_name": "x.pdf", "page": 4}) == "[x.pdf:p.4]"
-        assert _marker_from_meta(
-            {"source_name": "m.eml", "extractor": "eml", "message_id": "<abc@example.com>"}
-        ) == "[m.eml#<abc@example.com>]"
-        assert _marker_from_meta(
-            {"source_name": "d.docx", "extractor": "docx", "section": 2, "heading": "Definitions"}
-        ) == '[d.docx§2 "Definitions"]'
+        assert (
+            _marker_from_meta(
+                {"source_name": "m.eml", "extractor": "eml", "message_id": "<abc@example.com>"}
+            )
+            == "[m.eml#<abc@example.com>]"
+        )
+        assert (
+            _marker_from_meta(
+                {
+                    "source_name": "d.docx",
+                    "extractor": "docx",
+                    "section": 2,
+                    "heading": "Definitions",
+                }
+            )
+            == '[d.docx§2 "Definitions"]'
+        )
 
 
 class TestGuardParser:

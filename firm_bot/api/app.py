@@ -1,4 +1,5 @@
 """FastAPI app implementation."""
+
 from __future__ import annotations
 
 import asyncio
@@ -76,6 +77,7 @@ app = FastAPI(
 def _get_root() -> RootConfig:
     """Resolve the RootConfig (env-override friendly)."""
     import os
+
     data_dir = os.environ.get("FIRM_BOT_DATA_DIR", "./data")
     return RootConfig(data_dir=data_dir)
 
@@ -235,7 +237,10 @@ async def create_firm(req: CreateFirmRequest) -> dict[str, Any]:
 @app.get("/v1/firms/{slug}/config")
 async def get_config(slug: str) -> dict[str, Any]:
     store = _get_store(slug)
-    return {**store.config.__dict__, "effective_system_prompt": store.config.effective_system_prompt(_get_root())}
+    return {
+        **store.config.__dict__,
+        "effective_system_prompt": store.config.effective_system_prompt(_get_root()),
+    }
 
 
 class UpdateConfigRequest(BaseModel):
@@ -503,7 +508,9 @@ async def _do_query(
     from ..retrieve.hybrid import hybrid_search
 
     if store.collection().count() == 0:
-        raise HTTPException(409, "firm has no indexed chunks; call POST /v1/firms/{slug}/ingest first")
+        raise HTTPException(
+            409, "firm has no indexed chunks; call POST /v1/firms/{slug}/ingest first"
+        )
 
     embedder = get_embedder(root)
     embed = embedder.embed
@@ -537,7 +544,11 @@ async def _do_query(
     # guard LLM; this filter exists to surface suspicious chunks on
     # the response payload and audit log so operators can investigate.
     # Off via FIRM_BOT_INJECTION_FILTER=0 for benchmarking.
-    inj_enabled = os.environ.get("FIRM_BOT_INJECTION_FILTER", "1").lower() not in ("0", "false", "no")
+    inj_enabled = os.environ.get("FIRM_BOT_INJECTION_FILTER", "1").lower() not in (
+        "0",
+        "false",
+        "no",
+    )
     injection_hits = 0
     injection_patterns: list[str] = []
     if inj_enabled:
@@ -907,14 +918,19 @@ async def run_eval(slug: str, req: EvalRequest) -> dict[str, Any]:
             hits,
         )
         answer = answer_with_ollama(
-            root.ollama_host, model, messages, root.llm_timeout_s,
+            root.ollama_host,
+            model,
+            messages,
+            root.llm_timeout_s,
         )
         cited = extract_cited_sources(answer)
-        source_cov = sum(1 for s in case.expected_sources if any(s in c for c in cited)) / max(len(case.expected_sources), 1)
-        kw_cov = sum(1 for kw in case.expected_keywords if kw.lower() in answer.lower()) / max(len(case.expected_keywords), 1)
-        sources_for_judge = [
-            (f"[{_marker_short(h.metadata)}]", h.text) for h in hits
-        ]
+        source_cov = sum(1 for s in case.expected_sources if any(s in c for c in cited)) / max(
+            len(case.expected_sources), 1
+        )
+        kw_cov = sum(1 for kw in case.expected_keywords if kw.lower() in answer.lower()) / max(
+            len(case.expected_keywords), 1
+        )
+        sources_for_judge = [(f"[{_marker_short(h.metadata)}]", h.text) for h in hits]
         ann = verify_citations(
             answer=answer,
             sources=sources_for_judge,

@@ -1,4 +1,5 @@
 """Tests for the cross-encoder reranker."""
+
 from __future__ import annotations
 
 

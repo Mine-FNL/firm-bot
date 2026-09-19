@@ -10,6 +10,7 @@ Behaviour pinned here:
   - env override ``FIRM_BOT_API_KEYS`` wins over auto-generated keys
     on subsequent boots
 """
+
 from __future__ import annotations
 
 import logging
@@ -83,7 +84,9 @@ def test_ensure_api_key_does_not_rotate_on_second_call(tmp_path: Path) -> None:
     assert cfg2.api_keys == [first_key]
 
 
-def test_ensure_api_key_logs_generated_key_with_marker(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+def test_ensure_api_key_logs_generated_key_with_marker(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
     """The generated key must appear in logs once, with a clear marker."""
     cfg = RootConfig(data_dir=str(tmp_path), require_api_key=True)
     with caplog.at_level(logging.WARNING, logger="firm_bot.config"):

@@ -14,6 +14,7 @@ RAG-first design. v0.1 does NOT fine-tune a base model; it grounds every
 answer in retrieved chunks from the tenant's own document corpus. Fine-tuning
 (LoRA) is on the v0.2 roadmap.
 """
+
 from __future__ import annotations
 
 __version__ = "0.1.0"

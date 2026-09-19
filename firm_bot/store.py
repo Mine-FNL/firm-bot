@@ -16,6 +16,7 @@ We never share data between firms. Each Chroma collection name is the
 firm slug. ``Store`` is the only module that touches the filesystem
 directly — the retriever and answer modules go through it.
 """
+
 from __future__ import annotations
 
 import json
@@ -37,9 +38,9 @@ class RetrievalHit:
     chunk_id: str
     text: str
     metadata: dict[str, object]
-    score: float                  # RRF score after fusion
-    bm25_rank: int = -1           # -1 if not in BM25 top-k
-    dense_rank: int = -1          # -1 if not in dense top-k
+    score: float  # RRF score after fusion
+    bm25_rank: int = -1  # -1 if not in BM25 top-k
+    dense_rank: int = -1  # -1 if not in dense top-k
 
 
 class Store:
@@ -87,6 +88,7 @@ class Store:
         """Lazily create the per-firm Chroma persistent client."""
         if self._chromadb_client is None:
             import chromadb
+
             client: Any = chromadb.PersistentClient(path=str(self.chroma_dir))
             self._chromadb_client = client
         return self._chromadb_client
@@ -205,8 +207,10 @@ class Store:
 
     def stats(self) -> dict[str, int | str]:
         col = self.collection() if self.chroma_dir.exists() else None
-        bm25_count = len(self._bm25_corpus) if self._bm25_corpus else (
-            len(self.bm25_meta()) if self.meta_path.exists() else 0
+        bm25_count = (
+            len(self._bm25_corpus)
+            if self._bm25_corpus
+            else (len(self.bm25_meta()) if self.meta_path.exists() else 0)
         )
         chroma_count = col.count() if col is not None else 0
         return {

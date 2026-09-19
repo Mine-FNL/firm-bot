@@ -5,6 +5,7 @@ The test suite runs without Ollama by default — the ``mock_ollama`` and
 clients see deterministic responses. Set ``FIRM_BOT_RUN_OLLAMA_TESTS=1``
 to skip mocking and hit a real Ollama endpoint.
 """
+
 from __future__ import annotations
 
 import os
@@ -71,9 +72,7 @@ def mock_ollama() -> Any:
             # Echo the last 80 chars of the user content as a stub answer
             answer = (
                 "This is a stub answer for tests. "
-                "[stub.pdf:p.1] (last input: "
-                + text[-80:].replace("\n", " ")
-                + ")"
+                "[stub.pdf:p.1] (last input: " + text[-80:].replace("\n", " ") + ")"
             )
         return Response(
             200,
@@ -104,7 +103,9 @@ def mock_ollama() -> Any:
         # initialisation (the FakeSentenceTransformer below should bypass
         # these but respx doesn't know that until after the first call).
         router.head(url__regex=r".*huggingface\.co.*").mock(return_value=Response(200))
-        router.get(url__regex=r".*huggingface\.co.*").mock(return_value=Response(200, content=b"{}"))
+        router.get(url__regex=r".*huggingface\.co.*").mock(
+            return_value=Response(200, content=b"{}")
+        )
         yield router
 
 
@@ -136,6 +137,7 @@ def monkeypatch_hf() -> None:
             return out / norms
 
     import sys
+
     st_module = sys.modules.get("sentence_transformers")
     if st_module is not None:
         st_module.SentenceTransformer = FakeSentenceTransformer  # type: ignore[attr-defined]

@@ -8,6 +8,7 @@ has section boundaries to recognise.
 Usage:
     python -m eval.build_cuad_corpus --n 10 --out eval/cuad_corpus
 """
+
 from __future__ import annotations
 
 import argparse
@@ -25,7 +26,14 @@ def _download_cuad(target: Path) -> Path:
         return target
     target.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
-        ["git", "clone", "--depth", "1", "https://github.com/TheAtticusProject/cuad.git", str(target)],
+        [
+            "git",
+            "clone",
+            "--depth",
+            "1",
+            "https://github.com/TheAtticusProject/cuad.git",
+            str(target),
+        ],
         check=True,
     )
     subprocess.run(
@@ -56,8 +64,12 @@ def build(out_dir: Path, n: int) -> int:
     from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
     styles = getSampleStyleSheet()
-    body_style = ParagraphStyle("body", parent=styles["BodyText"], fontSize=9, leading=12, spaceAfter=6)
-    title_style = ParagraphStyle("title", parent=styles["Heading1"], fontSize=12, leading=14, spaceAfter=8)
+    body_style = ParagraphStyle(
+        "body", parent=styles["BodyText"], fontSize=9, leading=12, spaceAfter=6
+    )
+    title_style = ParagraphStyle(
+        "title", parent=styles["Heading1"], fontSize=12, leading=14, spaceAfter=8
+    )
 
     for i, c in enumerate(contracts, 1):
         title = c.get("title", f"contract-{i}").strip().replace("/", "_")[:120]

@@ -21,6 +21,7 @@ If you don't have Ollama running, the script exits cleanly with a
 Numbers from a real run go into the README's "End-to-end benchmark"
 section.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -46,15 +47,15 @@ class E2ERow:
     answer: str
     cited: list[str]
     issues: int
-    keyword_coverage: float        # fraction of expected keywords in answer
+    keyword_coverage: float  # fraction of expected keywords in answer
     has_citation: bool
-    source_correct: bool           # did the citation point to the expected source
+    source_correct: bool  # did the citation point to the expected source
     answer_seconds: float
     guard_seconds: float
-    ragas_faithfulness: float      # NaN if not computable
+    ragas_faithfulness: float  # NaN if not computable
     ragas_answer_relevancy: float
     ragas_context_precision: float
-    ragas_context_recall: float    # NaN if no ground truth
+    ragas_context_recall: float  # NaN if no ground truth
 
 
 @dataclass
@@ -65,7 +66,7 @@ class E2EReport:
     p95_answer_s: float
     p50_guard_s: float
     p95_guard_s: float
-    headline_pass_rate: float      # correct + cited + clean
+    headline_pass_rate: float  # correct + cited + clean
     avg_keyword_coverage: float
     avg_guard_issues: float
     citation_coverage: float
@@ -133,8 +134,7 @@ def run_e2e(
 
     if not _check_ollama(ollama_host):
         print(
-            f"SKIPPED: Ollama not reachable at {ollama_host}. "
-            "Start Ollama and re-run.",
+            f"SKIPPED: Ollama not reachable at {ollama_host}. Start Ollama and re-run.",
             file=sys.stderr,
         )
         sys.exit(2)
@@ -201,7 +201,10 @@ def run_e2e(
             messages = build_messages(system, question, hits)
             try:
                 answer_text = answer_with_ollama(
-                    ollama_host, answer_model, messages, root.llm_timeout_s,
+                    ollama_host,
+                    answer_model,
+                    messages,
+                    root.llm_timeout_s,
                 )
             except Exception as e:
                 log.warning("answer failed for case %d: %s", i, e)
@@ -214,7 +217,10 @@ def run_e2e(
                 ann = verify_citations(
                     answer=answer_text,
                     sources=[
-                        (f"[{h.metadata.get('source_name', '?')}:p.{h.metadata.get('page', '?')}]", h.text)
+                        (
+                            f"[{h.metadata.get('source_name', '?')}:p.{h.metadata.get('page', '?')}]",
+                            h.text,
+                        )
                         for h in hits
                     ],
                     ollama_host=ollama_host,
@@ -234,9 +240,9 @@ def run_e2e(
             else 1.0
         )
         has_citation = bool(cited)
-        source_correct = any(
-            expected_source.lower() in c.lower() for c in cited
-        ) if cited else False
+        source_correct = (
+            any(expected_source.lower() in c.lower() for c in cited) if cited else False
+        )
 
         # RAGAS metrics: ``hits`` is the retrieval list (may be empty
         # if the corpus returned nothing). The judge calls are cheap
@@ -253,11 +259,7 @@ def run_e2e(
         # Fixture schema permits ``relevant_ids`` (preferred) or
         # ``relevant_docs`` (legacy). Either way, missing → NaN
         # for context_recall (rendered as "n/a" in the markdown).
-        relevant_ids = (
-            case.get("relevant_ids")
-            or case.get("relevant_docs")
-            or None
-        )
+        relevant_ids = case.get("relevant_ids") or case.get("relevant_docs") or None
         try:
             scores = score_all(
                 question=question,
@@ -311,10 +313,14 @@ def run_e2e(
     p95_ans = ans_times[max(0, int(n * 0.95) - 1)]
     p50_g = statistics.median(guard_times)
     p95_g = guard_times[max(0, int(n * 0.95) - 1)]
-    headline = sum(
-        1 for r in rows
-        if r.keyword_coverage >= 0.99 and r.has_citation and r.issues == 0 and r.source_correct
-    ) / n
+    headline = (
+        sum(
+            1
+            for r in rows
+            if r.keyword_coverage >= 0.99 and r.has_citation and r.issues == 0 and r.source_correct
+        )
+        / n
+    )
     avg_kw = statistics.mean(r.keyword_coverage for r in rows)
     avg_iss = statistics.mean(r.issues for r in rows)
     cite_cov = sum(1 for r in rows if r.has_citation) / n
@@ -402,13 +408,17 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fixture", default="eval/compare_fixture.json")
     parser.add_argument("--corpus", default="eval/compare_corpus")
-    parser.add_argument("--ollama-host", default=os.environ.get("FIRM_BOT_OLLAMA_HOST", "http://127.0.0.1:11434"))
+    parser.add_argument(
+        "--ollama-host", default=os.environ.get("FIRM_BOT_OLLAMA_HOST", "http://127.0.0.1:11434")
+    )
     parser.add_argument("--model", default="qwen2.5-coder:7b")
     parser.add_argument("--judge-model", default="qwen2.5-coder:7b")
     parser.add_argument("--out", default="eval/e2e_results.json")
     parser.add_argument("--markdown", action="store_true")
     parser.add_argument("--k", type=int, default=6)
-    parser.add_argument("--limit", type=int, default=10, help="cap the number of cases (for fast iteration)")
+    parser.add_argument(
+        "--limit", type=int, default=10, help="cap the number of cases (for fast iteration)"
+    )
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.WARNING, format="%(message)s")

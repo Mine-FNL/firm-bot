@@ -1,4 +1,5 @@
 """Tests for firm_bot.audit_log."""
+
 from __future__ import annotations
 
 import csv
@@ -189,7 +190,9 @@ def test_read_audit_log_missing_file_is_empty(firm_dir: Path) -> None:
 def test_prune_older_than_removes_old_records(firm_dir: Path) -> None:
     path = audit_log_path(firm_dir)
     # An "old" record from 2 years ago, a "recent" one from today.
-    old_ts = (datetime.now(tz=UTC) - timedelta(days=400)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")[:-4] + "Z"
+    old_ts = (datetime.now(tz=UTC) - timedelta(days=400)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")[
+        :-4
+    ] + "Z"
     recent_ts = utc_now_iso()
     append_record(path, _make_record(ts=old_ts, request_id="old"))
     append_record(path, _make_record(ts=recent_ts, request_id="recent"))
@@ -207,7 +210,9 @@ def test_prune_older_than_handles_missing_file(firm_dir: Path) -> None:
 def test_prune_older_than_zero_days_keeps_nothing_old(firm_dir: Path) -> None:
     """Edge case: retention_days=0 should remove anything not from this exact instant."""
     path = audit_log_path(firm_dir)
-    old_ts = (datetime.now(tz=UTC) - timedelta(seconds=10)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")[:-4] + "Z"
+    old_ts = (datetime.now(tz=UTC) - timedelta(seconds=10)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")[
+        :-4
+    ] + "Z"
     append_record(path, _make_record(ts=old_ts, request_id="old"))
     removed = prune_older_than(path, retention_days=0)
     assert removed == 1
@@ -311,4 +316,6 @@ def test_appended_records_never_contain_question_or_answer_text(firm_dir: Path) 
     assert secret_answer not in raw
     # But the hash of each is present.
     assert hash_text(secret_question) in raw
-    assert hash_text(secret_answer) not in raw  # we don't even store the hash of the answer (len only)
+    assert (
+        hash_text(secret_answer) not in raw
+    )  # we don't even store the hash of the answer (len only)

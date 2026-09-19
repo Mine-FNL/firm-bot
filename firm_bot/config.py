@@ -22,6 +22,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+import secrets
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -72,12 +73,19 @@ class RootConfig:
     # CORS allow-list. Empty list = no CORS headers emitted (fail closed).
     # Pass ["*"] to allow any origin (development only).
     cors_allow_origins: list[str] = field(default_factory=list)
-    # ---- API key auth (opt-in) ----
-    # Set ``require_api_key=True`` to gate every ``/v1/*`` endpoint on
-    # a valid API key. Health/metrics/UI are exempt. For real per-user
-    # auth, deploy behind oauth2-proxy or similar — this module is
-    # only a single shared-secret gate.
-    require_api_key: bool = False
+    # ---- API key auth (default-on) ----
+    # As of v0.2 the API key gate is **enabled by default**. If
+    # ``require_api_key`` is True and ``api_keys`` is empty at startup,
+    # :meth:`ensure_api_key` generates a fresh 256-bit URL-safe token,
+    # prints it once with a ``GENERATED_API_KEY`` marker, and persists
+    # it to ``<data_dir>/config.yaml`` so subsequent boots don't
+    # rotate. Set ``FIRM_BOT_REQUIRE_API_KEY=0`` to disable entirely.
+    #
+    # For multi-worker deployments (``uvicorn --workers N``) auto-gen
+    # is unsafe — every worker would race to generate and persist a
+    # different key, breaking the others. Set ``FIRM_BOT_API_KEYS=<k>``
+    # in that case. UI / health / metrics are always exempt.
+    require_api_key: bool = True
     api_keys: list[str] = field(default_factory=list)
     # ---- audit log ----
     # Retention window for the per-firm query audit log. Records older
@@ -126,6 +134,7 @@ class RootConfig:
             "audit_retention_days",
             "audit_log_filename",
             "log_level",
+            "require_api_key",
         ):
             env_key = f"FIRM_BOT_{key.upper()}"
             val = os.environ.get(env_key)
@@ -208,6 +217,49 @@ class RootConfig:
                 "body_max_bytes must be >= 1024",
                 user_message="Body size cap must be at least 1024 bytes.",
             )
+
+    # ---- API key management ----
+
+    def ensure_api_key(self) -> None:
+        """Generate + persist an API key if none is configured.
+
+        Behaviour:
+          - No-op when ``require_api_key`` is False.
+          - No-op when ``api_keys`` already has at least one entry.
+          - Otherwise: generate a 256-bit URL-safe token, append it
+            to ``api_keys``, log it ONCE with a ``GENERATED_API_KEY``
+            marker (the operator MUST save it — we never log it again),
+            and persist to ``<data_dir>/config.yaml``.
+
+        Safety: only safe for single-worker deployments. Multi-worker
+        setups (``uvicorn --workers N``) race on the YAML write — set
+        ``FIRM_BOT_API_KEYS=<key>`` explicitly to avoid the race.
+        """
+        if not self.require_api_key:
+            return
+        if self.api_keys:
+            return
+        key = secrets.token_urlsafe(32)  # 256 bits
+        self.api_keys = [key]
+        # Loud, banner-style warning. The operator needs to see this
+        # in their boot logs and capture it before it scrolls off.
+        log.warning("=" * 72)
+        log.warning("GENERATED_API_KEY (save this — it will NOT be shown again):")
+        log.warning("  Authorization: Bearer %s", key)
+        log.warning(
+            "Or set FIRM_BOT_API_KEYS=<key> in your environment for "
+            "multi-worker / container deployments."
+        )
+        log.warning("=" * 72)
+        # Persist so a restart doesn't rotate the key. Best-effort —
+        # a write failure shouldn't break the process; the warning
+        # above already told the operator to copy it.
+        try:
+            cfg_path = Path(self.data_dir) / "config.yaml"
+            self.save(cfg_path)
+            log.info("persisted generated api key to %s", cfg_path)
+        except Exception as e:  # pragma: no cover - defensive
+            log.warning("could not persist generated api key: %s", e)
 
 
 @dataclass

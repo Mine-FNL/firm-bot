@@ -28,7 +28,8 @@ log = logging.getLogger("firm_bot.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Startup hook — auto-pull the configured Ollama model if missing.
+    """Startup hook — auto-pull the configured Ollama model if missing
+    and ensure at least one API key is configured.
 
     Controlled by `FIRM_BOT_AUTO_PULL_MODEL`:
       - "0" / "false" → skip
@@ -38,13 +39,28 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     This is what makes `firm-bot serve` work on first boot without
     a separate `ollama pull X` step. The pull is best-effort: query
     path surfaces the real error if the model is still missing.
+
+    API key bootstrap (v0.2 default-on): when ``require_api_key`` is
+    True and ``api_keys`` is empty, generate a fresh key, log it
+    once with a ``GENERATED_API_KEY`` banner, and persist to
+    ``<data_dir>/config.yaml``. The middleware is wired by
+    ``_register_middleware`` (import-time) and reads the resulting
+    ``api_keys`` list at request time.
     """
-    if os.environ.get("FIRM_BOT_AUTO_PULL_MODEL", "1").lower() not in ("0", "false", "no"):
-        root = _get_root()
+    root = _get_root()
+    if (
+        os.environ.get("FIRM_BOT_AUTO_PULL_MODEL", "1").lower() not in ("0", "false", "no")
+        and root.llm_model
+    ):
         # Only pull for the default answer model — firm-level overrides
         # are not auto-pulled (would race against user-driven config).
-        if root.llm_model:
-            ensure_model_pulled(root.ollama_host, root.llm_model)
+        ensure_model_pulled(root.ollama_host, root.llm_model)
+    # Bootstrap API key BEFORE yielding — the middleware relies on
+    # api_keys being populated by the time the first request arrives.
+    try:
+        root.ensure_api_key()
+    except Exception as e:  # pragma: no cover - defensive
+        log.warning("api key bootstrap failed: %s", e)
     yield
 
 

@@ -56,12 +56,37 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
     reason a user-facing endpoint returns 5xx.
     """
 
+    #: Maximum length for a client-supplied X-Request-ID header.
+    #: UUIDv4 is 36 chars; we accept up to 128 to allow custom ID
+    #: formats from upstream proxies / load balancers but reject
+    #: anything that looks like header smuggling (CR / LF, semi-
+    #: colons, or grossly oversized payloads).
+    _MAX_REQUEST_ID_LEN = 128
+    #: Allowed charset for client-supplied X-Request-ID. Anything
+    #: outside this is rejected (replaced with a server-generated ID
+    #: rather than 400ing the request — observability should not
+    #: gate user flows).
+    _REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9_\-]+$")
+
     async def dispatch(
         self,
         request: Request,
         call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
-        request_id = uuid.uuid4().hex
+        # Honor client-supplied X-Request-ID if it's well-formed.
+        # This makes distributed tracing across services work: the
+        # upstream proxy's ID flows through to our audit log. If the
+        # header is missing / malformed / oversized we generate our
+        # own — observability should never gate user flows.
+        incoming = request.headers.get("x-request-id") or request.headers.get("X-Request-ID")
+        if (
+            incoming
+            and len(incoming) <= self._MAX_REQUEST_ID_LEN
+            and self._REQUEST_ID_RE.match(incoming)
+        ):
+            request_id = incoming
+        else:
+            request_id = uuid.uuid4().hex
         request.state.request_id = request_id
         token = current_request_id.set(request_id)
 

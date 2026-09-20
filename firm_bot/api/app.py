@@ -9,7 +9,7 @@ import shutil
 import time
 import typing
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -223,11 +223,51 @@ class CreateFirmRequest(BaseModel):
 
 @app.post("/v1/firms", status_code=201)
 async def create_firm(req: CreateFirmRequest) -> dict[str, Any]:
+    """Create a new firm.
+
+    Race-condition hardening: two concurrent ``POST /v1/firms`` with
+    the same slug would both pass the original ``exists()`` check and
+    then both ``mkdir(exist_ok=True)``, with last-writer-wins on the
+    config. We now use atomic ``mkdir(exist_ok=False)`` so the second
+    request gets a clean ``FileExistsError`` → 409.
+
+    We write a sentinel ``.lock`` file first as a stronger guarantee:
+    even if a stale empty directory existed from a half-completed
+    earlier create, the sentinel prevents a successful re-create until
+    the operator cleans up. (See SECURITY.md "Operational notes".)
+    """
     root = _get_root()
     firm_dir = Path(root.data_dir) / "firms" / req.slug
+
+    # Pre-flight check is best-effort only — the authoritative gate
+    # is the atomic mkdir below. We keep the pre-flight so a clean
+    # "already exists" returns a friendlier 409 message without
+    # raising an OSError.
     if firm_dir.exists() and any(firm_dir.iterdir()):
         raise HTTPException(409, f"firm already exists: {req.slug}")
-    firm_dir.mkdir(parents=True, exist_ok=True)
+
+    # Atomic create. ``exist_ok=False`` makes mkdir raise FileExistsError
+    # if another request raced us to create the dir. We catch that
+    # specifically and translate to 409.
+    try:
+        firm_dir.mkdir(parents=True, exist_ok=False)
+    except FileExistsError:
+        raise HTTPException(409, f"firm already exists: {req.slug}") from None
+
+    # Sentinel: a 0-byte ``.lock`` file written first so we can
+    # distinguish a freshly-created empty dir from one that was
+    # abandoned by a crashed previous create. If the sentinel already
+    # exists (because mkdir succeeded but a previous run crashed
+    # between mkdir and write), we treat the create as a duplicate.
+    sentinel = firm_dir / ".lock"
+    try:
+        sentinel.touch(exist_ok=False)
+    except FileExistsError:
+        # mkdir succeeded but sentinel existed — likely a stale
+        # half-state. Treat as duplicate; operator can clean up
+        # the directory manually if needed.
+        raise HTTPException(409, f"firm already exists: {req.slug}") from None
+
     cfg = FirmConfig(
         slug=req.slug,
         name=req.name,
@@ -235,8 +275,18 @@ async def create_firm(req: CreateFirmRequest) -> dict[str, Any]:
         llm_model=req.llm_model,
         contact_email=req.contact_email,
     )
-    cfg.save(firm_dir)
-    (firm_dir / "source").mkdir(exist_ok=True)
+    try:
+        cfg.save(firm_dir)
+        (firm_dir / "source").mkdir(exist_ok=True)
+    except Exception:
+        # Roll back the sentinel + dir so a transient failure
+        # doesn't leave a phantom firm that looks created but has
+        # no config.
+        with suppress(OSError):
+            sentinel.unlink()
+        with suppress(OSError):
+            firm_dir.rmdir()
+        raise
     return cfg.__dict__
 
 

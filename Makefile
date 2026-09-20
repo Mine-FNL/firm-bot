@@ -25,7 +25,7 @@ PORT ?= 7860
 DATA_DIR ?= ./data
 LLM_MODEL ?= qwen2.5-coder:1.5b-instruct
 
-.PHONY: help install demo dev test lint typecheck docs docker docker-down docker-logs build clean all
+.PHONY: help install demo dev test lint typecheck docs docker docker-down docker-logs build clean all pdf pdf-one
 
 help:  ## show this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -82,6 +82,31 @@ bench-load:  ## concurrent load benchmark (FIRM_BOT_RUN_LOAD_BENCH=1)
 	FIRM_BOT_RUN_LOAD_BENCH=1 pytest tests/test_load.py -v -s
 
 bench: bench-compare  ## alias for the default benchmark
+
+# ---- PDF export --------------------------------------------------------
+
+# Rebuilds the 12 PDFs in pdfs/ from the markdown sources. Uses the
+# pandoc → playwright pipeline (scripts/render_pdf.py). The PDFs are
+# committed to the repo so external readers don't need the build
+# toolchain — run this only when the source markdown changes.
+pdf:  ## rebuild all distribution PDFs in pdfs/ via pandoc + playwright
+	@mkdir -p pdfs
+	@for src in WHITEPAPER.md INVESTORS.md SECURITY.md CONTRIBUTING.md \
+	           ARTICLE_BLOG.md ARTICLE_DEVTO.md INDIE_HACKERS.md \
+	           PRODUCT_HUNT.md LAUNCH.md SHOWCASE.md OUTREACH.md \
+	           README.md; do \
+	  out="pdfs/$${src%.md}.pdf"; \
+	  echo "  $$src -> $$out"; \
+	  $(PYTHON) scripts/render_pdf.py "$$src" "$$out" || exit 1; \
+	done
+	@echo
+	@echo "PDFs rebuilt. Run 'make test' to verify."
+
+pdf-one:  ## rebuild a single PDF: make pdf-one SRC=WHITEPAPER.md
+	@mkdir -p pdfs
+	@out="pdfs/$${SRC%.md}.pdf"; \
+	  echo "  $(SRC) -> $$out"; \
+	  $(PYTHON) scripts/render_pdf.py "$(SRC)" "$$out"
 
 # ---- lint / typecheck --------------------------------------------------
 

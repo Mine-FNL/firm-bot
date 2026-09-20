@@ -1,6 +1,17 @@
 /* firm-bot — PDF export stylesheet
- * Used by pandoc → weasyprint for marketing/distribution pack renders.
+ * Used by pandoc → playwright for marketing/distribution pack renders.
  * Dark accent (#7c5cff) matches the live site palette.
+ *
+ * Font choice: We use system fonts (Helvetica/Arial/SF Mono) rather
+ * than web fonts (Inter/JetBrains Mono) because:
+ *   1. Web fonts aren't installed on the build host, so the renderer
+ *      falls back to a font that mishandles "fi" / "fl" ligatures,
+ *      producing visibly broken output ("fi rm" instead of "firm",
+ *      "fl ow" instead of "flow").
+ *   2. System fonts render identically across macOS / Linux / Windows
+ *      without bundling.
+ *   3. Helvetica + SF Mono render ligatures correctly on every modern
+ *      OS without an explicit font-feature-settings override.
  */
 
 @page {
@@ -9,7 +20,7 @@
   @top-left {
     content: "firm-bot";
     color: #98a2b6;
-    font-family: "Inter", "Helvetica Neue", sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 9pt;
     vertical-align: bottom;
     padding-bottom: 0.3in;
@@ -17,7 +28,7 @@
   @top-right {
     content: string(title);
     color: #98a2b6;
-    font-family: "Inter", "Helvetica Neue", sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 9pt;
     vertical-align: bottom;
     padding-bottom: 0.3in;
@@ -25,7 +36,7 @@
   @bottom-center {
     content: counter(page) " / " counter(pages);
     color: #98a2b6;
-    font-family: "JetBrains Mono", "SF Mono", monospace;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
     font-size: 8pt;
   }
 }
@@ -38,10 +49,15 @@
 }
 
 html {
-  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   font-size: 10.5pt;
   line-height: 1.55;
   color: #1a1f2e;
+  /* Disable OpenType ligatures system-wide. Some fonts aggressively
+   * combine "fi", "fl", "ffi" into single glyphs which can render
+   * incorrectly in Chromium's PDF backend on certain platforms. We
+   * prefer the explicit two-character form for stability. */
+  font-feature-settings: "liga" 0, "clig" 0, "calt" 0;
 }
 
 body {
@@ -85,7 +101,7 @@ body > p:first-of-type strong {
 
 /* ---- Headings ---- */
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Inter", "Helvetica Neue", sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   color: #0a0e1a;
   page-break-after: avoid;
   font-weight: 700;
@@ -139,7 +155,7 @@ li {
 
 /* ---- Code ---- */
 code {
-  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
   font-size: 9.2pt;
   background: #f3f1fb;
   color: #4a3a9c;
@@ -148,7 +164,7 @@ code {
 }
 
 pre {
-  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
   font-size: 9pt;
   background: #f7f7fb;
   border-left: 3pt solid #7c5cff;
@@ -157,6 +173,8 @@ pre {
   line-height: 1.45;
   border-radius: 0 4pt 4pt 0;
   page-break-inside: avoid;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 pre code {
@@ -226,25 +244,9 @@ img {
   page-break-inside: avoid;
 }
 
-/* ---- Footer (cover page only) ---- */
-.cover-footer {
-  position: absolute;
-  bottom: 0.7in;
-  left: 0;
-  right: 0;
-  text-align: left;
-  font-size: 9pt;
-  color: #98a2b6;
-  font-family: "Inter", "Helvetica Neue", sans-serif;
-}
-
-.cover-footer .accent {
-  color: #7c5cff;
-  font-weight: 600;
-}
-
 /* ---- Strong/bold inside body text ---- */
 strong {
   color: #0a0e1a;
   font-weight: 600;
 }
+

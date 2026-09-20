@@ -205,11 +205,20 @@ async def list_firms() -> dict[str, list[dict[str, Any]]]:
 
 
 class CreateFirmRequest(BaseModel):
-    slug: str = Field(pattern=r"^[a-z0-9][a-z0-9_-]{1,40}$")
-    name: str
-    system_prompt: str = ""
-    llm_model: str = ""
-    contact_email: str = ""
+    # Hard caps on every operator-controlled string. Defends the
+    # endpoint against trivial DoS (10 MB question string → 10 MB
+    # embed call) and against typos (zero-length slug → regex still
+    # matches but the operator clearly meant something else). The
+    # body-size middleware catches bigger bodies before we get here.
+    slug: str = Field(
+        pattern=r"^[a-z0-9][a-z0-9_-]{1,40}$",
+        min_length=2,
+        max_length=42,
+    )
+    name: str = Field(min_length=1, max_length=200)
+    system_prompt: str = Field(default="", max_length=20_000)
+    llm_model: str = Field(default="", max_length=200)
+    contact_email: str = Field(default="", max_length=320)
 
 
 @app.post("/v1/firms", status_code=201)
@@ -363,28 +372,37 @@ async def ingest(slug: str, force: bool = False) -> dict[str, Any]:
 
 
 class QueryRequest(BaseModel):
-    question: str
-    history: list[dict[str, str]] | None = None
+    # Question capped at 4 KB. Real legal/audit questions rarely
+    # exceed a paragraph; anything larger is almost certainly an
+    # embed-loop DoS attempt and is rejected before we touch the
+    # embed model.
+    question: str = Field(min_length=1, max_length=4096)
+    # History capped at 20 turns (40 messages). Multi-turn sessions
+    # longer than this are rare; longer histories should be
+    # summarised client-side before re-sending.
+    history: list[dict[str, str]] | None = Field(default=None, max_length=40)
     run_guard: bool = True
-    k: int | None = None  # override default answer_k
+    k: int | None = Field(default=None, ge=1, le=100)
 
 
 class StreamQueryRequest(BaseModel):
-    question: str
-    history: list[dict[str, str]] | None = None
-    k: int | None = None
+    question: str = Field(min_length=1, max_length=4096)
+    history: list[dict[str, str]] | None = Field(default=None, max_length=40)
+    k: int | None = Field(default=None, ge=1, le=100)
 
 
 class BulkQueryItem(BaseModel):
     """One row in a bulk-query request."""
 
-    question: str
-    history: list[dict[str, str]] | None = None
+    question: str = Field(min_length=1, max_length=4096)
+    history: list[dict[str, str]] | None = Field(default=None, max_length=40)
     run_guard: bool = True
-    k: int | None = None
+    k: int | None = Field(default=None, ge=1, le=100)
     # Optional client-supplied id so callers can correlate results
-    # without re-parsing the question text.
-    id: str | None = None
+    # without re-parsing the question text. Capped at 64 chars so
+    # it fits a UUID without letting arbitrary long strings leak into
+    # the audit log.
+    id: str | None = Field(default=None, max_length=64)
 
 
 class BulkQueryRequest(BaseModel):
@@ -805,50 +823,58 @@ def _audit_record(
         utc_now_iso,
     )
 
-    root = _get_root()
-    firm_dir = Path(root.data_dir) / "firms" / slug
-    path = firm_dir / root.audit_log_filename
-
-    # The pre-existing schema expects ``retrieval_latency_ms`` to
-    # include everything up to the answer LLM (retrieve + injection
-    # scan), and ``answer_latency_ms`` to include answer + guard. The
-    # injection scan is so cheap (<1 ms) that lumping it into
-    # retrieval doesn't distort the numbers in practice, and matches
-    # the operational question "how long did retrieval take?".
-    retrieval_latency_ms = round(retrieve_latency_ms + injection_scan_latency_ms, 2)
-    answer_latency_with_guard_ms = round(answer_latency_ms + guard_latency_ms, 2)
-
-    guard_summary = "skipped"
-    guard_issue_count = 0
-    if annotated is not None:
-        guard_summary = annotated.summary or "ok"
-        guard_issue_count = len(getattr(annotated, "issues", []) or [])
-
-    record = AuditRecord(
-        timestamp=utc_now_iso(),
-        request_id=request_id_now(),
-        firm_slug=slug,
-        question_hash=hash_text(question),
-        question_len_chars=len(question),
-        answer_len_chars=len(answer_text),
-        citation_count=len(cited) if cited else 0,
-        guard_summary=guard_summary,
-        guard_issue_count=guard_issue_count,
-        confidence=_compute_confidence(cited, annotated, len(hits)),
-        model=model,
-        retrieval_latency_ms=retrieval_latency_ms,
-        answer_latency_ms=answer_latency_with_guard_ms,
-        total_latency_ms=total_latency_ms,
-        hit_count=len(hits),
-        reranker=reranker,
-        api_key_hash=None,  # populated by middleware in a future pass
-        prompt_injection_hits=injection_hits,
-        prompt_injection_patterns=list(injection_patterns),
-    )
+    # Best-effort write: a misconfigured data dir, full disk, audit-
+    # log permission issue, or even a programming error in this
+    # function must NEVER propagate to the request thread — audit
+    # is best-effort, the user-facing response must not fail because
+    # we can't record it. Every line below is wrapped; only
+    # KeyboardInterrupt / SystemExit are deliberately allowed to
+    # propagate so the process can shut down cleanly.
     try:
+        root = _get_root()
+        firm_dir = Path(root.data_dir) / "firms" / slug
+        path = firm_dir / root.audit_log_filename
+
+        # The pre-existing schema expects ``retrieval_latency_ms`` to
+        # include everything up to the answer LLM (retrieve + injection
+        # scan), and ``answer_latency_ms`` to include answer + guard.
+        # The injection scan is so cheap (<1 ms) that lumping it into
+        # retrieval doesn't distort the numbers in practice, and
+        # matches the operational question "how long did retrieval
+        # take?".
+        retrieval_latency_ms = round(retrieve_latency_ms + injection_scan_latency_ms, 2)
+        answer_latency_with_guard_ms = round(answer_latency_ms + guard_latency_ms, 2)
+
+        guard_summary = "skipped"
+        guard_issue_count = 0
+        if annotated is not None:
+            guard_summary = annotated.summary or "ok"
+            guard_issue_count = len(getattr(annotated, "issues", []) or [])
+
+        record = AuditRecord(
+            timestamp=utc_now_iso(),
+            request_id=request_id_now(),
+            firm_slug=slug,
+            question_hash=hash_text(question),
+            question_len_chars=len(question),
+            answer_len_chars=len(answer_text),
+            citation_count=len(cited) if cited else 0,
+            guard_summary=guard_summary,
+            guard_issue_count=guard_issue_count,
+            confidence=_compute_confidence(cited, annotated, len(hits)),
+            model=model,
+            retrieval_latency_ms=retrieval_latency_ms,
+            answer_latency_ms=answer_latency_with_guard_ms,
+            total_latency_ms=total_latency_ms,
+            hit_count=len(hits),
+            reranker=reranker,
+            api_key_hash=None,  # populated by middleware in a future pass
+            prompt_injection_hits=injection_hits,
+            prompt_injection_patterns=list(injection_patterns),
+        )
         append_record(path, record)
     except Exception as e:  # pragma: no cover - defensive
-        log.warning("audit log append failed for %s: %s", slug, e)
+        log.warning("audit log write failed for %s: %s", slug, e)
 
 
 def _marker_short(meta: dict[str, Any]) -> str:
@@ -1128,25 +1154,36 @@ def _schedule_audit(**kwargs: Any) -> None:
     already saturated — never silently drops records. The fallback
     also runs synchronously when called outside an event loop (e.g.,
     in unit tests).
+
+    Every code path inside this function catches exceptions so that
+    an audit failure never propagates to the user-facing response.
+    The audit log is best-effort: the request handler already has
+    the answer in hand and must not fail because we can't record it.
     """
     try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        # No running loop — fall back to sync. This happens in
-        # unit tests and during shutdown.
-        _audit_record(**kwargs)
-        return
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # No running loop — fall back to sync. This happens in
+            # unit tests and during shutdown.
+            _audit_record(**kwargs)
+            return
 
-    if _AUDIT_SEMAPHORE.locked():
-        _AUDIT_BACKPRESSURE.maybe_warn(_AUDIT_SEMAPHORE._value)
-        _audit_record(**kwargs)
-        return
+        if _AUDIT_SEMAPHORE.locked():
+            _AUDIT_BACKPRESSURE.maybe_warn(_AUDIT_SEMAPHORE._value)
+            _audit_record(**kwargs)
+            return
 
-    async def _runner() -> None:
-        async with _AUDIT_SEMAPHORE:
-            await asyncio.to_thread(_audit_record, **kwargs)
+        async def _runner() -> None:
+            async with _AUDIT_SEMAPHORE:
+                await asyncio.to_thread(_audit_record, **kwargs)
 
-    # Fire-and-forget: the task is intentionally untracked. Storing
-    # the reference would let us accumulate thousands of pending
-    # tasks under bursty load; the semaphore above is the bound.
-    loop.create_task(_runner())  # noqa: RUF006
+        # Fire-and-forget: the task is intentionally untracked. Storing
+        # the reference would let us accumulate thousands of pending
+        # tasks under bursty load; the semaphore above is the bound.
+        loop.create_task(_runner())  # noqa: RUF006
+    except Exception as e:  # pragma: no cover - defensive
+        # Belt-and-braces: even the queueing path itself must not
+        # propagate to the caller. If this fires, the audit record
+        # is silently dropped — log so an operator can investigate.
+        log.warning("audit scheduling failed for %s: %s", kwargs.get("slug", "?"), e)

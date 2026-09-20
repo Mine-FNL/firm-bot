@@ -114,6 +114,9 @@ def _register_middleware() -> None:
             rate_limiter=limiter,
             max_body_bytes=root.max_upload_bytes,
             cors_allow_origins=root.cors_allow_origins,
+            cors_allow_methods=root.cors_allow_methods,
+            cors_allow_headers=root.cors_allow_headers,
+            cors_max_age=root.cors_max_age,
         )
         # API key auth — opt-in. Only wired when require_api_key is
         # true AND at least one key is configured. Health / metrics /
@@ -140,6 +143,44 @@ def _get_store(slug: str) -> Store:
     if not is_valid_slug(slug):
         raise HTTPException(400, f"invalid slug: {slug!r}")
     return Store.open(root, slug)
+
+
+# Per-firm ingest locks. Process-local: each uvicorn worker has its own
+# dict, which is fine — concurrent ingests across workers are still
+# individually safe (save_processed is per-file atomic, upsert_chunks is
+# idempotent on chunk_id). What we prevent here is the intra-process
+# race where two parallel requests both walk walk_source_dir, both call
+# load_manifest(), both call save_manifest() — the second save loses the
+# first's progress for any files the first one had finished.
+_INGEST_LOCKS: dict[str, asyncio.Lock] = {}
+
+
+def _ingest_lock_for(slug: str) -> asyncio.Lock:
+    """Return (lazily creating) the per-firm asyncio lock."""
+    lock = _INGEST_LOCKS.get(slug)
+    if lock is None:
+        lock = asyncio.Lock()
+        _INGEST_LOCKS[slug] = lock
+    return lock
+
+
+def _safe_get_embedder(root: RootConfig) -> Any:
+    """Resolve the embedder, mapping load failures to a structured 503.
+
+    The query / ingest / eval endpoints all call this instead of
+    ``get_embedder`` directly. A failure here is environmental —
+    weights missing, OOM, backend crashed — and should look like
+    ``503 embedder_unavailable`` to the operator, not a 500 with a
+    stack trace.
+    """
+    try:
+        return get_embedder(root)
+    except Exception as e:
+        log.exception("embedder load failed")
+        raise HTTPException(
+            503,
+            f"embedder_unavailable: failed to load embedding model: {e}",
+        ) from e
 
 
 # ---- HTML UI (single page) ----
@@ -390,10 +431,28 @@ async def ingest(slug: str, force: bool = False) -> dict[str, Any]:
     With ``incremental_indexing=True`` (default) and ``force=False``, only
     files whose content hash has changed since the last ingest are
     re-processed. Pass ``?force=true`` to re-ingest all files.
+
+    Concurrency: each firm has a process-local ``asyncio.Lock`` so two
+    concurrent ``POST /ingest`` calls for the same slug don't race on
+    ``save_manifest`` / ``upsert_chunks``. The second caller gets a
+    ``409 ingest_in_progress`` with a hint to retry. Locks are
+    per-process — for multi-worker uvicorn each worker ingests in
+    parallel against the same on-disk state, which is safe because
+    both ``save_processed`` (per-file) and ``upsert_chunks`` (idempotent
+    via chunk_id) are individually atomic.
     """
+    lock = _ingest_lock_for(slug)
+    if lock.locked():
+        raise HTTPException(409, f"ingest_in_progress: another ingest for '{slug}' is running")
+    async with lock:
+        return await _do_ingest(slug, force)
+
+
+async def _do_ingest(slug: str, force: bool) -> dict[str, Any]:
+    """Inner ingest — caller holds the per-firm lock."""
     store = _get_store(slug)
     root = _get_root()
-    embedder = get_embedder(root)
+    embedder = _safe_get_embedder(root)
     embed = embedder.embed
 
     from ..redact import redact_text
@@ -446,7 +505,18 @@ async def ingest(slug: str, force: bool = False) -> dict[str, Any]:
         }
 
     texts = [c.text for c in all_chunks]
-    embeddings = embed(texts)
+    try:
+        embeddings = embed(texts)
+    except Exception as e:
+        # Encode failure (model OOM, backend crashed). 503: the operator
+        # needs to free memory / restart. We've already saved partial
+        # processed docs and chunks — those are safe to keep, the next
+        # ingest will redo them because we don't save_manifest below.
+        log.exception("embed failed mid-ingest for slug=%s (%d chunks)", slug, len(texts))
+        raise HTTPException(
+            503,
+            f"embedder_unavailable: failed to encode {len(texts)} chunks: {e}",
+        ) from e
     store.upsert_chunks(all_chunks, embeddings)
     store.save_bm25(all_chunks)
     store.save_manifest(new_manifest)
@@ -608,7 +678,7 @@ async def query_stream(slug: str, req: StreamQueryRequest) -> StreamingResponse:
     if store.collection().count() == 0:
         raise HTTPException(409, "firm has no indexed chunks")
 
-    embedder = get_embedder(root)
+    embedder = _safe_get_embedder(root)
 
     # Wrap the embed callable so single-element ``embed([question])``
     # calls — the only ones made on the query path — go through the
@@ -723,7 +793,7 @@ async def _do_query(
             409, "firm has no indexed chunks; call POST /v1/firms/{slug}/ingest first"
         )
 
-    embedder = get_embedder(root)
+    embedder = _safe_get_embedder(root)
     embed = embedder.embed
     reranker = None
     if root.reranker_model:
@@ -1107,7 +1177,7 @@ async def run_eval(slug: str, req: EvalRequest) -> dict[str, Any]:
 
     store = _get_store(slug)
     root = _get_root()
-    embedder = get_embedder(root)
+    embedder = _safe_get_embedder(root)
     model = store.config.llm_model or root.llm_model
     rows: list[dict[str, Any]] = []
     for case in req.cases:

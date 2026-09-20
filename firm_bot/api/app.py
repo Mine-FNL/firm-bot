@@ -338,14 +338,49 @@ async def stats(slug: str) -> dict[str, Any]:
 
 @app.post("/v1/firms/{slug}/upload")
 async def upload(slug: str, file: UploadFile) -> dict[str, Any]:
+    """Upload one file into the firm's source/ dir.
+
+    Hardening:
+      - ``Path(filename).name`` strips path components, so
+        ``../../etc/passwd`` lands as ``passwd``. Combined with the
+        slug regex (alphanum + ``-`` + ``_``) and the ``name != ""``
+        + ``not name.startswith('.')`` guards, this blocks every
+        path-traversal variant I can think of.
+      - 0-byte uploads rejected (accidental-empty-file = silent
+        ingest failure later).
+      - Existing files are rejected with 409 to avoid silently
+        overwriting an operator's manual edit; the API contract is
+        "upload = create" — to replace, the operator deletes first.
+      - Body size cap (root.max_upload_bytes) is enforced upstream
+        by SecurityMiddleware, so we don't need a per-file loop
+        guard here.
+    """
     store = _get_store(slug)
     name = Path(file.filename or "upload.bin").name
     if not name or name.startswith("."):
         raise HTTPException(400, "invalid filename")
     target = store.source_dir / name
+    # Defense in depth: target must resolve under source_dir. This
+    # should be impossible because ``Path(name).name`` strips path
+    # components, but a future refactor that bypasses ``.name``
+    # (e.g. using the raw filename) would silently reintroduce path
+    # traversal. The explicit containment check makes the invariant
+    # load-bearing on the test, not the implementation.
+    try:
+        target.resolve().relative_to(store.source_dir.resolve())
+    except ValueError as e:
+        raise HTTPException(400, "invalid filename") from e
+    if target.exists():
+        raise HTTPException(409, f"file already exists: {name}")
     with target.open("wb") as f:
         shutil.copyfileobj(file.file, f)
-    return {"stored": str(target), "size_bytes": target.stat().st_size}
+    size = target.stat().st_size
+    if size == 0:
+        # Don't leave a 0-byte stub; remove it and tell the caller.
+        with suppress(OSError):
+            target.unlink()
+        raise HTTPException(400, "empty file rejected")
+    return {"stored": str(target), "size_bytes": size}
 
 
 @app.post("/v1/firms/{slug}/ingest")
@@ -465,7 +500,10 @@ class BulkQueryRequest(BaseModel):
     """
 
     items: list[BulkQueryItem]
-    max_concurrency: int = 4
+    # max_concurrency capped at 16 — beyond this the asyncio.gather +
+    # semaphore contention starts hurting more than it helps, and the
+    # caller can always split into two bulk requests if they need more.
+    max_concurrency: int = Field(default=4, ge=1, le=16)
 
 
 @app.post("/v1/firms/{slug}/query")

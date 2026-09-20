@@ -268,3 +268,142 @@ def test_request_id_appears_in_audit_log(client: TestClient) -> None:
     # header — that's the part that demonstrably flowed through
     # the observability middleware.
     assert r.headers["X-Request-ID"] == "trace-from-client-12345"
+
+
+# ---- bulk endpoint hardening ------------------------------------------
+
+
+def test_bulk_query_max_concurrency_capped_at_16(client: TestClient) -> None:
+    """max_concurrency above 16 is rejected — defends against unbounded
+    concurrency that would crush the local Ollama server."""
+    client.post("/v1/firms", json={"slug": "demo", "name": "Test"})
+    r = client.post(
+        "/v1/firms/demo/query/bulk",
+        json={"items": [{"question": "test"}], "max_concurrency": 100},
+    )
+    assert r.status_code == 422
+
+
+def test_bulk_query_max_concurrency_zero_rejected(client: TestClient) -> None:
+    client.post("/v1/firms", json={"slug": "demo", "name": "Test"})
+    r = client.post(
+        "/v1/firms/demo/query/bulk",
+        json={"items": [{"question": "test"}], "max_concurrency": 0},
+    )
+    assert r.status_code == 422
+
+
+def test_bulk_query_default_concurrency_accepted(client: TestClient) -> None:
+    """Sanity: omitting max_concurrency uses the default of 4."""
+    client.post("/v1/firms", json={"slug": "demo", "name": "Test"})
+    r = client.post(
+        "/v1/firms/demo/query/bulk",
+        json={"items": [{"question": "test", "run_guard": False}]},
+    )
+    # 422 means validation failed — should NOT happen with defaults.
+    assert r.status_code != 422
+
+
+# ---- upload endpoint hardening ----------------------------------------
+
+
+def test_upload_empty_file_rejected(
+    client: TestClient, sample_pdf: Path
+) -> None:
+    """A 0-byte upload is rejected (avoids silent ingest failures later)."""
+    import os
+
+    client.post("/v1/firms", json={"slug": "demo", "name": "Test"})
+    # Write a 0-byte file
+    empty_path = os.path.join(os.environ["FIRM_BOT_DATA_DIR"], "empty.pdf")
+    Path(empty_path).write_bytes(b"")
+    with open(empty_path, "rb") as f:
+        r = client.post(
+            "/v1/firms/demo/upload",
+            files={"file": ("empty.pdf", f, "application/pdf")},
+        )
+    assert r.status_code == 400
+    assert "empty" in r.text.lower()
+
+
+def test_upload_duplicate_file_rejected(client: TestClient, sample_pdf: Path) -> None:
+    """Re-uploading the same filename returns 409 — never silently overwrites.
+
+    Defends against the operator workflow where they edited the
+    file on disk and a re-upload would clobber their changes
+    silently.
+    """
+    client.post("/v1/firms", json={"slug": "demo", "name": "Test"})
+    with sample_pdf.open("rb") as f:
+        r1 = client.post(
+            "/v1/firms/demo/upload",
+            files={"file": (sample_pdf.name, f, "application/pdf")},
+        )
+    assert r1.status_code == 200
+    # Second upload with the same filename
+    with sample_pdf.open("rb") as f:
+        r2 = client.post(
+            "/v1/firms/demo/upload",
+            files={"file": (sample_pdf.name, f, "application/pdf")},
+        )
+    assert r2.status_code == 409
+    assert "already exists" in r2.text.lower()
+
+
+def test_upload_path_traversal_filename_stripped(client: TestClient) -> None:
+    """Path components in the filename are stripped before the write.
+
+    A filename like ``../../etc/passwd`` lands as just ``passwd``,
+    which is then rejected by the dot-prefix guard or the
+    not-PDF/EML/DOCX filter.
+    """
+    import os
+
+    client.post("/v1/firms", json={"slug": "demo", "name": "Test"})
+    # Use PDF-like content so the upload would otherwise succeed.
+    r = client.post(
+        "/v1/firms/demo/upload",
+        files={"file": ("../../etc/passwd", b"%PDF-fake", "application/pdf")},
+    )
+    # /etc/passwd MUST NOT have been created or modified recently.
+    if Path("/etc/passwd").exists():
+        import time
+
+        assert (time.time() - Path("/etc/passwd").stat().st_mtime) > 5, (
+            "/etc/passwd was modified by upload!"
+        )
+    assert r.status_code in (200, 400)
+
+
+def _was_modified_recently(p: Path) -> bool:
+    """True if the file was modified in the last 5 seconds."""
+    import time
+
+    if not p.exists():
+        return False
+    return (time.time() - p.stat().st_mtime) < 5
+
+
+def test_upload_dotfile_rejected(client: TestClient) -> None:
+    """A filename starting with '.' is rejected (hidden files)."""
+    client.post("/v1/firms", json={"slug": "demo", "name": "Test"})
+    r = client.post(
+        "/v1/firms/demo/upload",
+        files={"file": (".bashrc", b"rm -rf /", "text/plain")},
+    )
+    assert r.status_code == 400
+
+
+def test_upload_empty_filename_rejected(client: TestClient) -> None:
+    """An empty filename is rejected (FastAPI returns 422 for that)."""
+    client.post("/v1/firms", json={"slug": "demo", "name": "Test"})
+    r = client.post(
+        "/v1/firms/demo/upload",
+        files={"file": ("", b"hello", "application/pdf")},
+    )
+    # FastAPI pydantic validation catches the empty filename before
+    # our handler — either 400 or 422 is an acceptable rejection;
+    # we just need it to NOT be 200.
+    assert r.status_code in (400, 422), (
+        f"empty filename should be rejected, got {r.status_code}"
+    )

@@ -407,3 +407,88 @@ def test_upload_empty_filename_rejected(client: TestClient) -> None:
     assert r.status_code in (400, 422), (
         f"empty filename should be rejected, got {r.status_code}"
     )
+
+
+# ---- auth header hardening -------------------------------------------
+
+
+def test_oversized_authorization_header_rejected(
+    client: TestClient, caplog: pytest.LogCaptureFixture
+) -> None:
+    """An Authorization header over 512 bytes is rejected as malformed.
+
+    Defends against trivial DoS: a 10 MB Authorization header would
+    otherwise be decoded + hashed per request, wasting CPU.
+    """
+    from firm_bot.security.api_key import key_from_headers
+
+    # Build an ASGI scope with an oversized Authorization header.
+    huge_token = b"x" * 10_000
+    scope = {
+        "type": "http",
+        "headers": [(b"authorization", b"Bearer " + huge_token)],
+    }
+    # The function should return None (cap exceeded → treated as missing).
+    assert key_from_headers(scope) is None
+
+
+def test_oversized_x_api_key_header_rejected(client: TestClient) -> None:
+    """An X-Api-Key header over 512 bytes is rejected as malformed."""
+    from firm_bot.security.api_key import key_from_headers
+
+    huge_key = b"x" * 10_000
+    scope = {
+        "type": "http",
+        "headers": [(b"x-api-key", huge_key)],
+    }
+    assert key_from_headers(scope) is None
+
+
+def test_normal_size_authorization_header_passes_length_check(
+    client: TestClient,
+) -> None:
+    """A normal-sized Authorization header is not blocked by the cap."""
+    from firm_bot.security.api_key import key_from_headers
+
+    scope = {
+        "type": "http",
+        "headers": [(b"authorization", b"Bearer " + b"x" * 64)],
+    }
+    extracted = key_from_headers(scope)
+    assert extracted == "x" * 64
+
+
+def test_normal_size_x_api_key_passes_length_check(client: TestClient) -> None:
+    from firm_bot.security.api_key import key_from_headers
+
+    scope = {
+        "type": "http",
+        "headers": [(b"x-api-key", b"x" * 64)],
+    }
+    assert key_from_headers(scope) == "x" * 64
+
+
+def test_authorization_header_exactly_at_cap_accepted(client: TestClient) -> None:
+    """A header exactly at the cap is accepted (boundary check)."""
+    from firm_bot.security.api_key import _MAX_KEY_LEN, key_from_headers
+
+    # Total header = "Bearer " (7) + N bytes for token. Cap is _MAX_KEY_LEN
+    # on the raw header bytes, so token can be up to _MAX_KEY_LEN - 7.
+    token_len = _MAX_KEY_LEN - 7
+    scope = {
+        "type": "http",
+        "headers": [(b"authorization", b"Bearer " + b"x" * token_len)],
+    }
+    assert key_from_headers(scope) == "x" * token_len
+
+
+def test_authorization_header_one_byte_over_cap_rejected(client: TestClient) -> None:
+    """One byte over the cap → rejected (boundary check)."""
+    from firm_bot.security.api_key import _MAX_KEY_LEN, key_from_headers
+
+    token_len = _MAX_KEY_LEN - 7 + 1
+    scope = {
+        "type": "http",
+        "headers": [(b"authorization", b"Bearer " + b"x" * token_len)],
+    }
+    assert key_from_headers(scope) is None

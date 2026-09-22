@@ -144,9 +144,7 @@ def test_stream_query_endpoint(client: TestClient, sample_pdf: Path) -> None:
 # ---- bulk query endpoint -------------------------------------------------
 
 
-def test_bulk_query_returns_results_for_each_item(
-    client: TestClient, sample_pdf: Path
-) -> None:
+def test_bulk_query_returns_results_for_each_item(client: TestClient, sample_pdf: Path) -> None:
     """A bulk request returns one result per input item, in order."""
     client.post("/v1/firms", json={"slug": "demo", "name": "Demo LLP"})
     with sample_pdf.open("rb") as f:

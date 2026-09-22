@@ -9,6 +9,7 @@ Behaviour pinned here:
   - Concurrent misses for the same key all return the same vector
   - ``reset_query_cache()`` clears state (test helper)
 """
+
 from __future__ import annotations
 
 import threading

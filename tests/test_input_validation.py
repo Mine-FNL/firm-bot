@@ -21,6 +21,7 @@ The tests don't cover every edge of Pydantic itself; they pin the
 specific bounds firm-bot chose so a future refactor can't quietly
 loosen them.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

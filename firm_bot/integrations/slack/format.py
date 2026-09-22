@@ -207,8 +207,4 @@ def _escape_mrkdwn(text: str) -> str:
     and link syntax). Escape them so a citation marker like
     ``Section <3.2>`` doesn't get parsed as a malformed link.
     """
-    return (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")

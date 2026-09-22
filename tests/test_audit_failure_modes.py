@@ -16,6 +16,7 @@ Behaviour pinned here:
     returns the answer normally — the audit record is lost but the
     user-facing flow is unbroken.
 """
+
 from __future__ import annotations
 
 import logging
@@ -68,11 +69,16 @@ def test_audit_record_swallows_path_traversal_oserror(
     # fails to mkdir.
     fake_data = tmp_path / "iam-a-file-not-a-dir"
     fake_data.write_text("blocking")
+
     def _fake_root() -> Any:
-        return type("R", (), {
-            "data_dir": str(fake_data),
-            "audit_log_filename": "audit-log.jsonl",
-        })()
+        return type(
+            "R",
+            (),
+            {
+                "data_dir": str(fake_data),
+                "audit_log_filename": "audit-log.jsonl",
+            },
+        )()
 
     monkeypatch.setattr(app_mod, "_get_root", _fake_root)
 
@@ -112,10 +118,14 @@ def test_audit_record_swallows_record_construction_failure(
     app_mod = importlib.import_module("firm_bot.api.app")
 
     def _fake_root() -> Any:
-        return type("R", (), {
-            "data_dir": str(tmp_path),
-            "audit_log_filename": "audit-log.jsonl",
-        })()
+        return type(
+            "R",
+            (),
+            {
+                "data_dir": str(tmp_path),
+                "audit_log_filename": "audit-log.jsonl",
+            },
+        )()
 
     monkeypatch.setattr(app_mod, "_get_root", _fake_root)
 
@@ -171,8 +181,11 @@ def test_schedule_audit_does_not_propagate_when_record_raises(
     app_mod = importlib.import_module("firm_bot.api.app")
 
     # Force the request path through _schedule_audit (off-request-path).
-    monkeypatch.setattr(app_mod, "_audit_record",
-                        lambda **_kw: (_ for _ in ()).throw(RuntimeError("simulated inner raise")))
+    monkeypatch.setattr(
+        app_mod,
+        "_audit_record",
+        lambda **_kw: (_ for _ in ()).throw(RuntimeError("simulated inner raise")),
+    )
 
     from firm_bot.api.app import _schedule_audit
 

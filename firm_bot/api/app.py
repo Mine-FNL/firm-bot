@@ -100,6 +100,8 @@ def _register_middleware() -> None:
 
     # Security: rate limit + body size + CORS. Reads limits from RootConfig.
     try:
+        from typing import Any, cast
+
         from ..security import SecurityMiddleware
         from ..security.api_key import APIKeyAuthMiddleware
         from ..security.rate_limit import RateLimiter
@@ -109,8 +111,16 @@ def _register_middleware() -> None:
             rate=root.rate_limit_rps,
             burst=root.rate_limit_burst,
         )
+        # Starlette's ``add_middleware`` infers the kwarg list from a
+        # ``_MiddlewareFactory[P]`` protocol and complains when our
+        # ``__init__`` has default values or union types that don't
+        # exactly match the protocol's expected positional list. The
+        # runtime is fine — Starlette forwards ``**kwargs`` to the
+        # constructor regardless — but mypy flags the mismatch. We
+        # cast to ``Any`` to opt out cleanly across Starlette versions
+        # (the constraint tightened between 0.48 and 1.2).
         app.add_middleware(
-            SecurityMiddleware,
+            cast(Any, SecurityMiddleware),
             rate_limiter=limiter,
             max_body_bytes=root.max_upload_bytes,
             cors_allow_origins=root.cors_allow_origins,
@@ -123,7 +133,7 @@ def _register_middleware() -> None:
         # UI are exempt regardless.
         if root.require_api_key and root.api_keys:
             app.add_middleware(
-                APIKeyAuthMiddleware,
+                cast(Any, APIKeyAuthMiddleware),
                 valid_keys=root.api_keys,
                 enabled=True,
             )
@@ -627,7 +637,12 @@ async def query_bulk(slug: str, req: BulkQueryRequest) -> dict[str, Any]:
                 resp = await _do_query(slug, item.question, item.history, item.k, item.run_guard)
                 return {"id": item.id, "ok": True, "response": resp}
             except HTTPException as e:
-                return {"id": item.id, "ok": False, "error": str(e.detail), "status_code": e.status_code}
+                return {
+                    "id": item.id,
+                    "ok": False,
+                    "error": str(e.detail),
+                    "status_code": e.status_code,
+                }
             except Exception as e:  # pragma: no cover - defensive
                 log.warning("bulk query item failed: %s", e)
                 return {"id": item.id, "ok": False, "error": f"{type(e).__name__}: {e}"}

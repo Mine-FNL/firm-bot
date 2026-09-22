@@ -147,9 +147,7 @@ def _query_and_format(
     cited: list[str] = list(cited_raw) if isinstance(cited_raw, list) else []
 
     url_map_raw = event.get("url_map")
-    url_map: dict[str, str] | None = (
-        url_map_raw if isinstance(url_map_raw, dict) else None
-    )
+    url_map: dict[str, str] | None = url_map_raw if isinstance(url_map_raw, dict) else None
     header_raw = event.get("header")
     header = header_raw if isinstance(header_raw, str) else None
 

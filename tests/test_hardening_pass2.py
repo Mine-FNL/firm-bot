@@ -211,9 +211,7 @@ def test_cors_preflight_returns_custom_methods(
 
     asyncio.run(_run())
     headers_lower = {k.lower(): v for k, v in received_headers}
-    assert headers_lower.get(b"access-control-allow-methods") == (
-        b"GET, POST, PATCH, DELETE"
-    )
+    assert headers_lower.get(b"access-control-allow-methods") == (b"GET, POST, PATCH, DELETE")
     assert headers_lower.get(b"access-control-allow-headers") == (
         b"Authorization, Content-Type, X-Tenant-Id"
     )
@@ -238,9 +236,7 @@ def test_all_httpx_clients_have_explicit_timeout() -> None:
         body = match.group(1)
         if "timeout" not in body:
             offenders.append(match.group(0).replace("\n", " ")[:80])
-    assert offenders == [], (
-        f"httpx.Client calls without explicit timeout: {offenders!r}"
-    )
+    assert offenders == [], f"httpx.Client calls without explicit timeout: {offenders!r}"
 
 
 def test_default_timeout_for_answer_model_is_120s() -> None:
@@ -295,8 +291,7 @@ def test_pyproject_deps_have_upper_bounds() -> None:
         if "<" not in spec:
             missing.append(name)
     assert missing == [], (
-        f"deps without an upper bound: {missing!r}. Add `<X` to pin the "
-        f"production envelope."
+        f"deps without an upper bound: {missing!r}. Add `<X` to pin the production envelope."
     )
 
 
@@ -327,9 +322,7 @@ def test_dev_deps_have_upper_bounds() -> None:
         name = re.split(r"[\[><=!~]", spec, maxsplit=1)[0].strip()
         if name and "<" not in spec:
             missing.append(name)
-    assert missing == [], (
-        f"optional deps without an upper bound: {missing!r}"
-    )
+    assert missing == [], f"optional deps without an upper bound: {missing!r}"
 
 
 # ---- 4. Concurrent ingest lock ------------------------------------------
@@ -524,7 +517,9 @@ def test_ingest_503_when_encode_fails_mid_ingest(
             raise MemoryError("simulated encode OOM")
 
     monkeypatch.setattr(
-        _app_module(), "get_embedder", lambda _root: _BoomEmbedder(),
+        _app_module(),
+        "get_embedder",
+        lambda _root: _BoomEmbedder(),
     )
 
     r = client.post("/v1/firms/gamma/ingest")

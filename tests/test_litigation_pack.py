@@ -14,6 +14,7 @@ Behaviour pinned here:
     pack is not registered.
   - The litigation system prompt contains the documented markers.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -69,12 +70,7 @@ def test_chunk_transcript_splits_on_qa_boundaries() -> None:
     embeddings capture the conversational thread. A. is never a
     boundary.
     """
-    text = (
-        "Q. What is your name?\n"
-        "A. John Doe.\n"
-        "Q. Where do you live?\n"
-        "A. Springfield.\n"
-    )
+    text = "Q. What is your name?\nA. John Doe.\nQ. Where do you live?\nA. Springfield.\n"
     chunks = chunk_transcript(text)
     # 4 lines < default lines_per_chunk=50 → one chunk
     assert len(chunks) == 1

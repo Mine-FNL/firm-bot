@@ -15,6 +15,7 @@ Two hardening passes pinned here:
     so a stale empty directory from a crashed previous create
     also results in 409.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -141,6 +142,7 @@ def test_create_firm_creates_sentinel_lock_file(client: TestClient) -> None:
     # data dir... actually we can just check that .lock exists
     # under the expected path. Use the env var that was monkey-patched.
     import os
+
     data_dir = Path(os.environ["FIRM_BOT_DATA_DIR"])
     firm_dir = data_dir / "firms" / "demo"
     assert (firm_dir / ".lock").exists()
@@ -177,11 +179,10 @@ def test_create_firm_after_partial_failure_does_not_leave_phantom(
     # have been rolled back so a retry can succeed.
     assert r.status_code >= 400, f"expected failure, got {r.status_code}"
     import os
+
     data_dir = Path(os.environ["FIRM_BOT_DATA_DIR"])
     firm_dir = data_dir / "firms" / "phantom"
-    assert not firm_dir.exists(), (
-        f"firm_dir was not rolled back after save failure: {firm_dir}"
-    )
+    assert not firm_dir.exists(), f"firm_dir was not rolled back after save failure: {firm_dir}"
 
 
 def test_create_firm_concurrent_same_slug_one_wins(
@@ -210,19 +211,14 @@ def test_create_firm_concurrent_same_slug_one_wins(
                 for i in range(5)
             ]
             responses = await asyncio.gather(*coros, return_exceptions=True)
-            return [
-                r.status_code if hasattr(r, "status_code") else 0
-                for r in responses
-            ]
+            return [r.status_code if hasattr(r, "status_code") else 0 for r in responses]
 
     statuses = asyncio.run(_race())
     assert statuses.count(201) == 1, (
-        f"expected exactly one 201, got counts: "
-        f"{[(s, statuses.count(s)) for s in set(statuses)]}"
+        f"expected exactly one 201, got counts: {[(s, statuses.count(s)) for s in set(statuses)]}"
     )
     assert statuses.count(409) == 4, (
-        f"expected exactly four 409s, got counts: "
-        f"{[(s, statuses.count(s)) for s in set(statuses)]}"
+        f"expected exactly four 409s, got counts: {[(s, statuses.count(s)) for s in set(statuses)]}"
     )
 
 
@@ -305,9 +301,7 @@ def test_bulk_query_default_concurrency_accepted(client: TestClient) -> None:
 # ---- upload endpoint hardening ----------------------------------------
 
 
-def test_upload_empty_file_rejected(
-    client: TestClient, sample_pdf: Path
-) -> None:
+def test_upload_empty_file_rejected(client: TestClient, sample_pdf: Path) -> None:
     """A 0-byte upload is rejected (avoids silent ingest failures later)."""
     import os
 
@@ -400,9 +394,7 @@ def test_upload_empty_filename_rejected(client: TestClient) -> None:
     # FastAPI pydantic validation catches the empty filename before
     # our handler — either 400 or 422 is an acceptable rejection;
     # we just need it to NOT be 200.
-    assert r.status_code in (400, 422), (
-        f"empty filename should be rejected, got {r.status_code}"
-    )
+    assert r.status_code in (400, 422), f"empty filename should be rejected, got {r.status_code}"
 
 
 # ---- auth header hardening -------------------------------------------

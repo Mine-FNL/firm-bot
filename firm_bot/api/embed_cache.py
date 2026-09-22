@@ -90,7 +90,9 @@ class QueryVectorCache:
         self._misses = 0
         self._lock = Lock()
 
-    def get_or_compute(self, question: str, embed_fn: Callable[[list[str]], list[list[float]]]) -> list[float]:
+    def get_or_compute(
+        self, question: str, embed_fn: Callable[[list[str]], list[list[float]]]
+    ) -> list[float]:
         """Return cached embedding for ``question`` or compute + cache it."""
         key = hashlib.sha256(question.encode("utf-8")).hexdigest()
         with self._lock:
@@ -138,7 +140,9 @@ class QueryVectorCache:
 _QUERY_VECTOR_CACHE = QueryVectorCache()
 
 
-def cached_query_embedding(question: str, embed_fn: Callable[[list[str]], list[list[float]]]) -> list[float]:
+def cached_query_embedding(
+    question: str, embed_fn: Callable[[list[str]], list[list[float]]]
+) -> list[float]:
     """Module-level wrapper around the process-wide query-vector cache."""
     return _QUERY_VECTOR_CACHE.get_or_compute(question, embed_fn)
 
@@ -151,4 +155,3 @@ def query_cache_stats() -> dict[str, int | float]:
 def reset_query_cache() -> None:
     """Clear the process-wide cache. Test helper."""
     _QUERY_VECTOR_CACHE.reset()
-

@@ -110,15 +110,9 @@ def test_verify_slack_signature_now_s_override_controls_freshness() -> None:
     secret = "s"
     sig = _sign(body, "1700000000", secret)
     # Exactly 4 minutes old — fresh.
-    assert (
-        verify_slack_signature(body, "1700000000", sig, secret, now_s=1700000240)
-        is True
-    )
+    assert verify_slack_signature(body, "1700000000", sig, secret, now_s=1700000240) is True
     # 6 minutes old — stale.
-    assert (
-        verify_slack_signature(body, "1700000000", sig, secret, now_s=1700000360)
-        is False
-    )
+    assert verify_slack_signature(body, "1700000000", sig, secret, now_s=1700000360) is False
 
 
 # ============================================================================
@@ -131,10 +125,7 @@ def test_format_answer_converts_citations_to_slack_links() -> None:
         "contract.pdf:p.4": "https://docs.example.com/contract.pdf#page=4",
         "nda.docx§2": "https://docs.example.com/nda.docx#h.2",
     }
-    answer = (
-        "The cap is USD 1M [contract.pdf:p.4] and confidentiality "
-        "lasts 3 years [nda.docx§2]."
-    )
+    answer = "The cap is USD 1M [contract.pdf:p.4] and confidentiality lasts 3 years [nda.docx§2]."
     result = format_answer(
         answer,
         cited=["contract.pdf:p.4", "nda.docx§2"],
@@ -224,9 +215,9 @@ def test_format_answer_handles_multiline_answer() -> None:
         "a.pdf:p.1": "https://e.com/a.pdf#1",
         "b.pdf:p.2": "https://e.com/b.pdf#2",
     }
-    text = format_answer(answer, cited=["a.pdf:p.1", "b.pdf:p.2"], url_map=url_map)[
-        "messages"
-    ][0]["text"]
+    text = format_answer(answer, cited=["a.pdf:p.1", "b.pdf:p.2"], url_map=url_map)["messages"][0][
+        "text"
+    ]
     assert "<https://e.com/a.pdf#1|a.pdf:p.1>" in text
     assert "<https://e.com/b.pdf#2|b.pdf:p.2>" in text
 
@@ -307,14 +298,10 @@ def test_handler_queries_firm_bot_and_returns_formatted_response() -> None:
         "confidence": 0.92,
     }
     client = FirmBotClient("http://example", "k")
-    with patch.object(
-        FirmBotClient, "query", return_value=expected_payload
-    ) as mock_query:
+    with patch.object(FirmBotClient, "query", return_value=expected_payload) as mock_query:
         result = handle_message(event, client)
 
-    mock_query.assert_called_once_with(
-        "acme", "what is the cap on liability?", history=None
-    )
+    mock_query.assert_called_once_with("acme", "what is the cap on liability?", history=None)
     assert len(result) >= 1
     text = result[0]["text"]
     assert "USD 1M" in text
@@ -444,10 +431,13 @@ def test_firm_bot_client_handles_transport_errors() -> None:
     import urllib.error
 
     client = FirmBotClient("http://h:7860", "k")
-    with patch(
-        "urllib.request.urlopen",
-        side_effect=urllib.error.URLError("connection refused"),
-    ), pytest.raises(FirmBotClientError) as ei:
+    with (
+        patch(
+            "urllib.request.urlopen",
+            side_effect=urllib.error.URLError("connection refused"),
+        ),
+        pytest.raises(FirmBotClientError) as ei,
+    ):
         client.query("acme", "hi")
     assert ei.value.status_code is None
     assert "unreachable" in str(ei.value).lower()

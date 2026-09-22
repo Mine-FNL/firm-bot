@@ -15,6 +15,7 @@ These run via ``python3 scripts/render_pdf.py`` for each source if a
 ``--regenerate`` flag is passed; otherwise they verify the committed
 PDFs directly. CI should regenerate before measuring.
 """
+
 from __future__ import annotations
 
 import re
@@ -167,10 +168,7 @@ def test_pdf_no_ligature_breakage(src_name: str) -> None:
         m = re.search(pattern, text)
         if m:
             failures.append(f"{label}: {m.group(0)!r}")
-    assert not failures, (
-        f"{pdf_path.name} has ligature artifacts:\n  "
-        + "\n  ".join(failures)
-    )
+    assert not failures, f"{pdf_path.name} has ligature artifacts:\n  " + "\n  ".join(failures)
 
 
 @pytest.mark.parametrize("src_name", SOURCES)

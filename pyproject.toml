@@ -110,6 +110,12 @@ ignore = [
     "RET504", # unnecessary assignment before return
 ]
 
+[tool.ruff.format]
+# Markdown formatting is gated behind ruff's preview mode; we keep it
+# off so CI doesn't churn on prose edits. Ruff 0.16.x changed the
+# default behaviour, so we explicitly opt out here.
+exclude = ["*.md", "*.mdx"]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["PLR2004", "S101", "B011", "PLC0415"]
 # Lazy imports are intentional in cli / api / retrieve: heavy deps

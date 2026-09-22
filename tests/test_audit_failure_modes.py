@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -67,10 +68,13 @@ def test_audit_record_swallows_path_traversal_oserror(
     # fails to mkdir.
     fake_data = tmp_path / "iam-a-file-not-a-dir"
     fake_data.write_text("blocking")
-    monkeypatch.setattr(app_mod, "_get_root", lambda: type("R", (), {
-        "data_dir": str(fake_data),
-        "audit_log_filename": "audit-log.jsonl",
-    })())
+    def _fake_root() -> Any:
+        return type("R", (), {
+            "data_dir": str(fake_data),
+            "audit_log_filename": "audit-log.jsonl",
+        })()
+
+    monkeypatch.setattr(app_mod, "_get_root", _fake_root)
 
     with caplog.at_level(logging.WARNING, logger="firm_bot.api.app"):
         # Must not raise.
@@ -107,10 +111,13 @@ def test_audit_record_swallows_record_construction_failure(
 
     app_mod = importlib.import_module("firm_bot.api.app")
 
-    monkeypatch.setattr(app_mod, "_get_root", lambda: type("R", (), {
-        "data_dir": str(tmp_path),
-        "audit_log_filename": "audit-log.jsonl",
-    })())
+    def _fake_root() -> Any:
+        return type("R", (), {
+            "data_dir": str(tmp_path),
+            "audit_log_filename": "audit-log.jsonl",
+        })()
+
+    monkeypatch.setattr(app_mod, "_get_root", _fake_root)
 
     # Patch ``AuditRecord`` so it raises when constructed.
     import firm_bot.audit_log as al_mod
@@ -161,8 +168,10 @@ def test_schedule_audit_does_not_propagate_when_record_raises(
     """
     import importlib
 
+    app_mod = importlib.import_module("firm_bot.api.app")
+
     # Force the request path through _schedule_audit (off-request-path).
-    monkeypatch.setattr(app_mod := importlib.import_module("firm_bot.api.app"), "_audit_record",
+    monkeypatch.setattr(app_mod, "_audit_record",
                         lambda **_kw: (_ for _ in ()).throw(RuntimeError("simulated inner raise")))
 
     from firm_bot.api.app import _schedule_audit

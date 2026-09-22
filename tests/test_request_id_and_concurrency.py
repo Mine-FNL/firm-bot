@@ -156,7 +156,6 @@ def test_create_firm_after_partial_failure_does_not_leave_phantom(
     sentinel + dir are rolled back).
     """
     import firm_bot.config as cfg_mod
-    from firm_bot.api import app as app_mod
 
     original_save = cfg_mod.FirmConfig.save
     raised = {"count": 0}
@@ -236,7 +235,6 @@ def test_request_id_appears_in_audit_log(client: TestClient) -> None:
     This is the end-to-end proof that request-ID propagation works
     across the observability middleware → request handler → audit log.
     """
-    import json
     import os
 
     client.post("/v1/firms", json={"slug": "audit-rid", "name": "AuditRID"})
@@ -357,8 +355,6 @@ def test_upload_path_traversal_filename_stripped(client: TestClient) -> None:
     which is then rejected by the dot-prefix guard or the
     not-PDF/EML/DOCX filter.
     """
-    import os
-
     client.post("/v1/firms", json={"slug": "demo", "name": "Test"})
     # Use PDF-like content so the upload would otherwise succeed.
     r = client.post(

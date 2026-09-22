@@ -71,6 +71,7 @@ def _pdfinfo_field(pdf_path: Path, field: str) -> str:
         capture_output=True,
         text=True,
         timeout=10,
+        check=False,
     )
     assert proc.returncode == 0, f"pdfinfo failed for {pdf_path}:\n{proc.stderr}"
     for line in proc.stdout.splitlines():
@@ -85,6 +86,7 @@ def _pdftotext(pdf_path: Path) -> str:
         capture_output=True,
         text=True,
         timeout=10,
+        check=False,
     )
     assert proc.returncode == 0, f"pdftotext failed for {pdf_path}:\n{proc.stderr}"
     return proc.stdout

@@ -208,9 +208,7 @@ def extract_pleading(path: Path) -> list[Chunk]:
 # --- dispatch integration --------------------------------------------------
 
 
-def _chunks_to_documents(
-    chunks: list[Chunk], fallback_doc_id_seed: str
-) -> list[Document]:
+def _chunks_to_documents(chunks: list[Chunk], fallback_doc_id_seed: str) -> list[Document]:
     """Convert pack-extractor ``Chunk`` output to ``Document`` for the
     standard ``firm_bot.ingest.common.dispatch`` contract.
 

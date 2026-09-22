@@ -24,39 +24,44 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "fastapi>=0.115",
-    "uvicorn[standard]>=0.32",
-    "pypdf>=5.0",
-    "pytesseract>=0.3.13",
-    "pdf2image>=1.17",
-    "python-docx>=1.1",
-    "chromadb>=0.5",
-    "rank-bm25>=0.2",
-    "sentence-transformers>=3.0",
-    "numpy>=2.0",
-    "httpx>=0.28",
-    "pyyaml>=6.0",
-    "python-multipart>=0.0.20",
-    "watchdog>=5.0",
-    "jinja2>=3.1",
-    "pydantic>=2.7",
+    # Upper bounds give production stability — pip won't silently pick
+    # a breaking major. Bump the upper bound when you've validated the
+    # next major in CI; don't relax without a smoke test.
+    "fastapi>=0.115,<0.120",
+    "uvicorn[standard]>=0.32,<0.40",
+    "pypdf>=5.0,<7.0",
+    "pytesseract>=0.3.13,<0.4",
+    "pdf2image>=1.17,<2.0",
+    "python-docx>=1.1,<2.0",
+    "chromadb>=0.5,<0.6",
+    "rank-bm25>=0.2,<0.3",
+    "sentence-transformers>=3.0,<4.0",
+    "numpy>=2.0,<2.5",  # numpy 2.5+ ships PEP 695 stubs that mypy 1.x can't parse
+    "httpx>=0.28,<0.29",
+    "pyyaml>=6.0,<7.0",
+    "python-multipart>=0.0.20,<0.1",
+    "watchdog>=5.0,<7.0",
+    "jinja2>=3.1,<4.0",
+    "pydantic>=2.7,<3",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0",
-    "pytest-cov>=5.0",
-    "pytest-asyncio>=0.24",
-    "ruff>=0.6",
-    "mypy>=1.10",
-    "respx>=0.21",     # mock httpx for tests
-    "types-PyYAML",
+    "pytest>=8.0,<9.0",
+    "pytest-cov>=5.0,<7.0",
+    "pytest-asyncio>=0.24,<2.0",
+    "ruff>=0.6,<0.17",
+    "mypy>=1.10,<3.0",
+    "respx>=0.21,<0.23",     # mock httpx for tests
+    "types-PyYAML>=6.0,<7.0",
+    "reportlab>=4.0,<5.0",     # used by tests/test_load.py + tests/conftest.py
+    "prometheus-client>=0.20,<0.25",  # used by tests/test_observability.py
 ]
 embed-fastembed = [
-    "fastembed>=0.3",
+    "fastembed>=0.3,<0.6",
 ]
 observability = [
-    "prometheus-client>=0.20",
+    "prometheus-client>=0.20,<0.25",
 ]
 
 [project.scripts]
@@ -105,6 +110,12 @@ ignore = [
     "RET504", # unnecessary assignment before return
 ]
 
+[tool.ruff.format]
+# Markdown formatting is gated behind ruff's preview mode; we keep it
+# off so CI doesn't churn on prose edits. Ruff 0.16.x changed the
+# default behaviour, so we explicitly opt out here.
+exclude = ["*.md", "*.mdx"]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["PLR2004", "S101", "B011", "PLC0415"]
 # Lazy imports are intentional in cli / api / retrieve: heavy deps
@@ -112,18 +123,26 @@ ignore = [
 # subcommand, and circular imports force the dispatch table to defer.
 # main() in cli.py is a subcommand dispatcher with many returns by design.
 "firm_bot/cli.py" = ["PLC0415", "PLR0911"]
-"firm_bot/api/app.py" = ["PLC0415"]
+# PLR0917 (too-many-positional-arguments) is allowed on signatures that
+# are deliberately wide because they fan out into many sub-systems (audit
+# log, hybrid search, security middleware ctor, eval plumbing). These
+# would be worse as keyword-only APIs — callers are programmatic, not
+# interactive.
+"firm_bot/api/app.py" = ["PLC0415", "PLR0917"]
 "firm_bot/api/embed_cache.py" = ["PLC0415"]
 "firm_bot/ingest/common.py" = ["PLC0415"]
 "firm_bot/ingest/pdf.py" = ["PLC0415"]
 "firm_bot/ingest/eml.py" = ["PLC0415"]
-"firm_bot/retrieve/hybrid.py" = ["PLC0415"]
+"firm_bot/retrieve/hybrid.py" = ["PLC0415", "PLR0917"]
 "firm_bot/retrieve/rerank.py" = ["PLC0415"]
 "firm_bot/store.py" = ["PLC0415"]
 "firm_bot/embed_backends.py" = ["PLC0415"]
+"firm_bot/security/middleware.py" = ["PLR0917"]
 "eval/harness.py" = ["PLC0415"]
-"eval/compare.py" = ["PLC0415", "PLR0915"]
-"eval/eval_e2e.py" = ["PLC0415", "PLR0915"]
+"eval/compare.py" = ["PLC0415", "PLR0915", "PLR0917"]
+"eval/eval_e2e.py" = ["PLC0415", "PLR0915", "PLR0917"]
+"eval/load.py" = ["PLC0415", "PLR0915", "PLR0917"]
+"eval/ragas.py" = ["PLC0415", "PLR0915", "PLR0917"]
 "eval/build_cuad_corpus.py" = ["PLC0415"]
 
 # ---- mypy ----

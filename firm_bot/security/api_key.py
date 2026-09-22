@@ -46,9 +46,15 @@ def key_from_headers(scope: dict[str, Any]) -> str | None:
 
     Returns the key string or ``None`` if no recognised header is
     present. Case-insensitive header name matching per RFC 7230.
+
+    Length cap: headers over ``_MAX_KEY_LEN`` (512) are rejected as
+    malformed. This defends against trivial DoS — a 10 MB
+    Authorization header would otherwise be decoded + hashed per
+    request, wasting CPU. Real API keys are typically 32-64 chars;
+    512 leaves headroom for ``Bearer <64-char-key>``-style
+    headers and ``X-Api-Key: <64-char-key>`` while rejecting
+    anything absurd.
     """
-    # ASGI headers are list[tuple[bytes, bytes]] in raw form. Most
-    # frameworks normalise to bytes lowercase.
     raw = scope.get("headers") or []
     auth_value: bytes | None = None
     x_api_key_value: bytes | None = None
@@ -60,14 +66,34 @@ def key_from_headers(scope: dict[str, Any]) -> str | None:
         elif n == "x-api-key":
             x_api_key_value = v
     if auth_value:
-        # "Bearer <key>" — case-insensitive scheme per RFC 6750
+        # "Bearer <key>" — case-insensitive scheme per RFC 6750.
+        # Length cap first: a 10 MB Authorization header would
+        # otherwise force a multi-MB decode + hash per request.
+        if len(auth_value) > _MAX_KEY_LEN:
+            log.warning(
+                "authorization header exceeds %d bytes — rejected",
+                _MAX_KEY_LEN,
+            )
+            return None
         text = auth_value.decode("latin-1")
         parts = text.split(None, 1)
         if len(parts) == 2 and parts[0].lower() == "bearer":
             return parts[1].strip()
     if x_api_key_value:
+        if len(x_api_key_value) > _MAX_KEY_LEN:
+            log.warning(
+                "x-api-key header exceeds %d bytes — rejected",
+                _MAX_KEY_LEN,
+            )
+            return None
         return x_api_key_value.decode("utf-8").strip()
     return None
+
+
+#: Maximum accepted length for an API-key header (in bytes). Real
+#: keys are 32-64 chars; 512 leaves comfortable headroom while
+#: rejecting pathological inputs.
+_MAX_KEY_LEN = 512
 
 
 def hash_key(key: str) -> str:

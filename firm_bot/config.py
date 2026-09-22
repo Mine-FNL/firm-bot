@@ -74,6 +74,18 @@ class RootConfig:
     # CORS allow-list. Empty list = no CORS headers emitted (fail closed).
     # Pass ["*"] to allow any origin (development only).
     cors_allow_origins: list[str] = field(default_factory=list)
+    # CORS preflight method/header allow-lists and cache lifetime.
+    # Defaults match the SecurityMiddleware DEFAULT_CORS_* constants.
+    # Override via env when the operator needs to expose additional
+    # methods (PUT, DELETE for custom clients) or custom headers
+    # (X-Tenant-Id, X-Request-Id echo, etc.) without a code change.
+    cors_allow_methods: list[str] = field(
+        default_factory=lambda: ["GET", "POST", "PATCH", "OPTIONS"]
+    )
+    cors_allow_headers: list[str] = field(
+        default_factory=lambda: ["Authorization", "Content-Type", "X-Requested-With"]
+    )
+    cors_max_age: int = 600
     # ---- API key auth (default-on) ----
     # As of v0.2 the API key gate is **enabled by default**. If
     # ``require_api_key`` is True and ``api_keys`` is empty at startup,
@@ -132,6 +144,7 @@ class RootConfig:
             "audit_log_filename",
             "log_level",
             "require_api_key",
+            "cors_max_age",
         ):
             env_key = f"FIRM_BOT_{key.upper()}"
             val = os.environ.get(env_key)
@@ -151,6 +164,8 @@ class RootConfig:
         # List-type env overrides. Comma-separated: ORIGIN=a,b,c → ['a','b','c'].
         csv_key_map = {
             "cors_allow_origins": "FIRM_BOT_CORS_ALLOW_ORIGINS",
+            "cors_allow_methods": "FIRM_BOT_CORS_ALLOW_METHODS",
+            "cors_allow_headers": "FIRM_BOT_CORS_ALLOW_HEADERS",
             "api_keys": "FIRM_BOT_API_KEYS",
         }
         for field_name, env_key in csv_key_map.items():

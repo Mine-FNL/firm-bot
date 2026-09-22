@@ -97,8 +97,9 @@ def test_schedule_audit_does_not_block_caller(
     elapsed = time.perf_counter() - start
     # Outside a loop, this is synchronous — but even sync, no fsync of a
     # one-record file should ever take more than a few ms. We assert
-    # generously (50ms) to avoid CI flakes on slow disks.
-    assert elapsed < 0.05
+    # generously (200ms) to avoid CI flakes on cold-disk runners where
+    # the first mkdir + atomic-rename pair takes 50-100ms.
+    assert elapsed < 0.2
 
 
 def test_backpressure_tracks_once_per_saturation(

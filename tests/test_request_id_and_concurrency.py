@@ -15,6 +15,7 @@ Two hardening passes pinned here:
     so a stale empty directory from a crashed previous create
     also results in 409.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -141,6 +142,7 @@ def test_create_firm_creates_sentinel_lock_file(client: TestClient) -> None:
     # data dir... actually we can just check that .lock exists
     # under the expected path. Use the env var that was monkey-patched.
     import os
+
     data_dir = Path(os.environ["FIRM_BOT_DATA_DIR"])
     firm_dir = data_dir / "firms" / "demo"
     assert (firm_dir / ".lock").exists()
@@ -156,7 +158,6 @@ def test_create_firm_after_partial_failure_does_not_leave_phantom(
     sentinel + dir are rolled back).
     """
     import firm_bot.config as cfg_mod
-    from firm_bot.api import app as app_mod
 
     original_save = cfg_mod.FirmConfig.save
     raised = {"count": 0}
@@ -178,11 +179,10 @@ def test_create_firm_after_partial_failure_does_not_leave_phantom(
     # have been rolled back so a retry can succeed.
     assert r.status_code >= 400, f"expected failure, got {r.status_code}"
     import os
+
     data_dir = Path(os.environ["FIRM_BOT_DATA_DIR"])
     firm_dir = data_dir / "firms" / "phantom"
-    assert not firm_dir.exists(), (
-        f"firm_dir was not rolled back after save failure: {firm_dir}"
-    )
+    assert not firm_dir.exists(), f"firm_dir was not rolled back after save failure: {firm_dir}"
 
 
 def test_create_firm_concurrent_same_slug_one_wins(
@@ -211,19 +211,14 @@ def test_create_firm_concurrent_same_slug_one_wins(
                 for i in range(5)
             ]
             responses = await asyncio.gather(*coros, return_exceptions=True)
-            return [
-                r.status_code if hasattr(r, "status_code") else 0
-                for r in responses
-            ]
+            return [r.status_code if hasattr(r, "status_code") else 0 for r in responses]
 
     statuses = asyncio.run(_race())
     assert statuses.count(201) == 1, (
-        f"expected exactly one 201, got counts: "
-        f"{[(s, statuses.count(s)) for s in set(statuses)]}"
+        f"expected exactly one 201, got counts: {[(s, statuses.count(s)) for s in set(statuses)]}"
     )
     assert statuses.count(409) == 4, (
-        f"expected exactly four 409s, got counts: "
-        f"{[(s, statuses.count(s)) for s in set(statuses)]}"
+        f"expected exactly four 409s, got counts: {[(s, statuses.count(s)) for s in set(statuses)]}"
     )
 
 
@@ -236,7 +231,6 @@ def test_request_id_appears_in_audit_log(client: TestClient) -> None:
     This is the end-to-end proof that request-ID propagation works
     across the observability middleware → request handler → audit log.
     """
-    import json
     import os
 
     client.post("/v1/firms", json={"slug": "audit-rid", "name": "AuditRID"})
@@ -307,9 +301,7 @@ def test_bulk_query_default_concurrency_accepted(client: TestClient) -> None:
 # ---- upload endpoint hardening ----------------------------------------
 
 
-def test_upload_empty_file_rejected(
-    client: TestClient, sample_pdf: Path
-) -> None:
+def test_upload_empty_file_rejected(client: TestClient, sample_pdf: Path) -> None:
     """A 0-byte upload is rejected (avoids silent ingest failures later)."""
     import os
 
@@ -357,8 +349,6 @@ def test_upload_path_traversal_filename_stripped(client: TestClient) -> None:
     which is then rejected by the dot-prefix guard or the
     not-PDF/EML/DOCX filter.
     """
-    import os
-
     client.post("/v1/firms", json={"slug": "demo", "name": "Test"})
     # Use PDF-like content so the upload would otherwise succeed.
     r = client.post(
@@ -404,6 +394,89 @@ def test_upload_empty_filename_rejected(client: TestClient) -> None:
     # FastAPI pydantic validation catches the empty filename before
     # our handler — either 400 or 422 is an acceptable rejection;
     # we just need it to NOT be 200.
-    assert r.status_code in (400, 422), (
-        f"empty filename should be rejected, got {r.status_code}"
-    )
+    assert r.status_code in (400, 422), f"empty filename should be rejected, got {r.status_code}"
+
+
+# ---- auth header hardening -------------------------------------------
+
+
+def test_oversized_authorization_header_rejected(
+    client: TestClient, caplog: pytest.LogCaptureFixture
+) -> None:
+    """An Authorization header over 512 bytes is rejected as malformed.
+
+    Defends against trivial DoS: a 10 MB Authorization header would
+    otherwise be decoded + hashed per request, wasting CPU.
+    """
+    from firm_bot.security.api_key import key_from_headers
+
+    # Build an ASGI scope with an oversized Authorization header.
+    huge_token = b"x" * 10_000
+    scope = {
+        "type": "http",
+        "headers": [(b"authorization", b"Bearer " + huge_token)],
+    }
+    # The function should return None (cap exceeded → treated as missing).
+    assert key_from_headers(scope) is None
+
+
+def test_oversized_x_api_key_header_rejected(client: TestClient) -> None:
+    """An X-Api-Key header over 512 bytes is rejected as malformed."""
+    from firm_bot.security.api_key import key_from_headers
+
+    huge_key = b"x" * 10_000
+    scope = {
+        "type": "http",
+        "headers": [(b"x-api-key", huge_key)],
+    }
+    assert key_from_headers(scope) is None
+
+
+def test_normal_size_authorization_header_passes_length_check(
+    client: TestClient,
+) -> None:
+    """A normal-sized Authorization header is not blocked by the cap."""
+    from firm_bot.security.api_key import key_from_headers
+
+    scope = {
+        "type": "http",
+        "headers": [(b"authorization", b"Bearer " + b"x" * 64)],
+    }
+    extracted = key_from_headers(scope)
+    assert extracted == "x" * 64
+
+
+def test_normal_size_x_api_key_passes_length_check(client: TestClient) -> None:
+    from firm_bot.security.api_key import key_from_headers
+
+    scope = {
+        "type": "http",
+        "headers": [(b"x-api-key", b"x" * 64)],
+    }
+    assert key_from_headers(scope) == "x" * 64
+
+
+def test_authorization_header_exactly_at_cap_accepted(client: TestClient) -> None:
+    """A header exactly at the cap is accepted (boundary check)."""
+    from firm_bot.security.api_key import _MAX_KEY_LEN, key_from_headers
+
+    # Total header = "Bearer " (7) + N bytes for token. Cap is _MAX_KEY_LEN
+    # on the raw header bytes, so token can be up to _MAX_KEY_LEN - 7.
+    token_len = _MAX_KEY_LEN - 7
+    scope = {
+        "type": "http",
+        "headers": [(b"authorization", b"Bearer " + b"x" * token_len)],
+    }
+    assert key_from_headers(scope) == "x" * token_len
+
+
+def test_authorization_header_one_byte_over_cap_rejected(client: TestClient) -> None:
+    """One byte over the cap → rejected (boundary check)."""
+    from firm_bot.security.api_key import _MAX_KEY_LEN, key_from_headers
+
+    token_len = _MAX_KEY_LEN - 7 + 1
+    scope = {
+        "type": "http",
+        "headers": [(b"authorization", b"Bearer " + b"x" * token_len)],
+    }
+    assert key_from_headers(scope) is None
